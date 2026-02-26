@@ -1,4 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -22,13 +24,25 @@ import AllCategories from "./pages/Categories/AllCategories";
 
 export default function App() {
   return (
-    <>
-      <Router>
+    <Router>
+      <AuthProvider>
         <ScrollToTop />
         <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
+          {/* Public Routes - No Layout */}
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+
+          {/* Protected Routes with Dashboard Layout */}
+          <Route element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }>
+            {/* Redirect root to dashboard */}
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            
+            {/* Dashboard */}
+            <Route path="/dashboard" element={<Home />} />
 
             {/* Categories */}
             <Route path="/categories" element={<AllCategories />} />
@@ -57,14 +71,10 @@ export default function App() {
             <Route path="/bar-chart" element={<BarChart />} />
           </Route>
 
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-
-          {/* Fallback Route */}
+          {/* Fallback Route - 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </Router>
-    </>
+      </AuthProvider>
+    </Router>
   );
 }

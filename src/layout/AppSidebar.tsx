@@ -3,15 +3,15 @@ import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
 import {
-  BoxIcon,
   CalenderIcon,
   ChevronDownIcon,
-  GridIcon,
   HorizontaLDots,
   UserCircleIcon,
+  FolderIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
+import { HomeIcon } from "@heroicons/react/24/outline";
 
 type NavItem = {
   name: string;
@@ -22,13 +22,13 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <GridIcon />,
+    icon: <HomeIcon />, // Use HomeIcon for dashboard
     name: "Dashboard",
-    path: "/",
+    path: "/dashboard", // Single dashboard entry
   },
   {
     name: "Categories",
-    icon: <BoxIcon />, // Most intuitive for categories/folders
+    icon: <FolderIcon />, // Folder icon for categories
     path: "/categories",
   },
   {
@@ -105,9 +105,14 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
-    (path: string) => location.pathname === path,
+    (path: string) => {
+      // Handle root path specially
+      if (path === "/dashboard" && location.pathname === "/") {
+        return true; // Consider root as dashboard
+      }
+      return location.pathname === path;
+    },
     [location.pathname],
   );
 
@@ -303,7 +308,7 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link to="/">
+        <Link to="/dashboard">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <img
@@ -338,31 +343,31 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  ""
-                  // "Menu"
+                  "MAIN MENU"
                 ) : (
                   <HorizontaLDots className="size-6" />
                 )}
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
-            <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  // "Others"
-                  ""
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
-            </div>
+            {othersItems.length > 0 && (
+              <div className="">
+                <h2
+                  className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                    !isExpanded && !isHovered
+                      ? "lg:justify-center"
+                      : "justify-start"
+                  }`}
+                >
+                  {isExpanded || isHovered || isMobileOpen ? (
+                    "OTHERS"
+                  ) : (
+                    <HorizontaLDots />
+                  )}
+                </h2>
+                {renderMenuItems(othersItems, "others")}
+              </div>
+            )}
           </div>
         </nav>
         {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
