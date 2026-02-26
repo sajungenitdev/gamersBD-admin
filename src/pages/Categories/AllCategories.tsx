@@ -729,7 +729,7 @@ const AllCategories = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="px-6 py-12 text-center">
+                    <td colSpan={7} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <FunnelIcon className="w-12 h-12 text-gray-400 dark:text-gray-600 mb-3" />
                         <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
