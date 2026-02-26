@@ -107,6 +107,7 @@ const AllCategories = () => {
 
       if (data.success) {
         setCategories(data.data);
+        console.log("Fetched categories:", data.data); // Debug log
       } else {
         setError("Failed to fetch categories");
       }
@@ -245,40 +246,46 @@ const AllCategories = () => {
     if (!editModal.category) return;
 
     try {
+      // Make sure parent is null when empty string
+      const dataToSend = {
+        ...updatedData,
+        parent: updatedData.parent === "" ? null : updatedData.parent,
+      };
+
       const response = await fetch(
         `https://gamersbd-server.onrender.com/api/categories/${editModal.category._id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedData),
+          body: JSON.stringify(dataToSend),
         },
       );
 
       const data = await response.json();
 
       if (response.ok) {
-        setCategories(
-          categories.map((c) =>
-            c._id === editModal.category?._id ? { ...c, ...updatedData } : c,
-          ),
-        );
+        await fetchCategories(); // Refresh from server
         showToast("Category updated successfully!", "success");
         setEditModal({ isOpen: false, category: null });
       } else {
         showToast(data.message || "Failed to update category", "error");
       }
     } catch (err) {
+      console.error("Error updating category:", err);
       showToast("Error connecting to server", "error");
     }
   };
 
   const handleSaveAdd = async (categoryData: any) => {
     try {
-      const response = await fetch("https://gamersbd-server.onrender.com/api/categories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(categoryData),
-      });
+      const response = await fetch(
+        "https://gamersbd-server.onrender.com/api/categories",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(categoryData),
+        },
+      );
 
       const data = await response.json();
 
