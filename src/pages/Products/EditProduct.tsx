@@ -174,7 +174,7 @@ export default function EditProduct() {
   const [keywordInput, setKeywordInput] = useState("");
   const [imageInput, setImageInput] = useState("");
 
-  console.log("Form Data:", formData);
+  console.log("Form Data:", imageInput);
   // Toast notification
   const [toast, setToast] = useState<{
     show: boolean;
