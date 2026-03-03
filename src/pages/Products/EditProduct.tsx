@@ -174,6 +174,7 @@ export default function EditProduct() {
   const [keywordInput, setKeywordInput] = useState("");
   const [imageInput, setImageInput] = useState("");
 
+  console.log("Form Data:", formData);
   // Toast notification
   const [toast, setToast] = useState<{
     show: boolean;
@@ -920,7 +921,7 @@ export default function EditProduct() {
                 onChange={handleNumberChange}
                 placeholder="0"
                 min="0"
-                step="1"
+                step={0.01}
                 required
               />
             </div>
@@ -952,7 +953,7 @@ export default function EditProduct() {
                 onChange={handleNumberChange}
                 placeholder="0"
                 min="0"
-                step="1"
+                step={0.01}
               />
             </div>
 
@@ -999,8 +1000,8 @@ export default function EditProduct() {
                   onChange={handleNumberChange}
                   placeholder="0"
                   min="0"
-                  max={formData.price - 1}
-                  step="1"
+                  max={String(formData.price - 1)}
+                  step={0.01}
                 />
                 {validationError && (
                   <p className="mt-1 text-xs text-red-600 dark:text-red-400">
@@ -1019,7 +1020,7 @@ export default function EditProduct() {
                   placeholder="0"
                   min="0"
                   max="100"
-                  step="1"
+                  step={1}
                 />
               </div>
               <div>
@@ -1471,7 +1472,7 @@ export default function EditProduct() {
                   value={formData.dimensions.length}
                   onChange={handleNumberChange}
                   placeholder="Length"
-                  step="0.1"
+                  step={0.1}
                 />
                 <Input
                   type="number"
@@ -1479,7 +1480,7 @@ export default function EditProduct() {
                   value={formData.dimensions.width}
                   onChange={handleNumberChange}
                   placeholder="Width"
-                  step="0.1"
+                  step={0.1}
                 />
                 <Input
                   type="number"
@@ -1487,7 +1488,7 @@ export default function EditProduct() {
                   value={formData.dimensions.height}
                   onChange={handleNumberChange}
                   placeholder="Height"
-                  step="0.1"
+                  step={0.1}
                 />
               </div>
             </div>
@@ -1513,7 +1514,7 @@ export default function EditProduct() {
                 value={formData.weight}
                 onChange={handleNumberChange}
                 placeholder="Weight in grams"
-                step="0.1"
+                step={0.1}
               />
             </div>
             <div>
