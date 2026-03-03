@@ -165,7 +165,7 @@ export default function AddProduct() {
   const [tagInput, setTagInput] = useState("");
   const [keywordInput, setKeywordInput] = useState("");
   const [imageInput, setImageInput] = useState("");
-
+  console.log(imageInput);
   // Toast notification
   const [toast, setToast] = useState<{
     show: boolean;
@@ -194,7 +194,7 @@ export default function AddProduct() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       const data: ApiResponse = await response.json();
 
@@ -225,7 +225,7 @@ export default function AddProduct() {
     if (formData.category) {
       // Find children of selected parent category
       const children = categories.filter(
-        (cat) => cat.parent && cat.parent._id === formData.category
+        (cat) => cat.parent && cat.parent._id === formData.category,
       );
       setSubCategories(children);
 
@@ -240,7 +240,7 @@ export default function AddProduct() {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value, type } = e.target;
 
@@ -270,8 +270,14 @@ export default function AddProduct() {
 
   // Add item to array
   const addToArray = (
-    field: "platform" | "genre" | "features" | "tags" | "metaKeywords" | "images",
-    value: string
+    field:
+      | "platform"
+      | "genre"
+      | "features"
+      | "tags"
+      | "metaKeywords"
+      | "images",
+    value: string,
   ) => {
     if (value.trim()) {
       setFormData((prev) => ({
@@ -294,7 +300,7 @@ export default function AddProduct() {
     setFormData((prev) => ({
       ...prev,
       [field]: (prev[field as keyof ProductFormData] as any[]).filter(
-        (_, i) => i !== index
+        (_, i) => i !== index,
       ),
     }));
   };
@@ -329,7 +335,7 @@ export default function AddProduct() {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(productData),
-        }
+        },
       );
 
       const data = await response.json();
@@ -422,7 +428,10 @@ export default function AddProduct() {
         </div>
 
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm" aria-label="Breadcrumb">
+        <nav
+          className="flex items-center gap-2 text-sm"
+          aria-label="Breadcrumb"
+        >
           <ol className="flex items-center flex-wrap gap-2">
             <li>
               <a
@@ -584,7 +593,10 @@ export default function AddProduct() {
                 <option value="">Select a parent category</option>
                 {parentCategories.map((cat) => (
                   <option key={cat._id} value={cat._id}>
-                    {cat.name} {cat.description ? `- ${cat.description.substring(0, 30)}...` : ""}
+                    {cat.name}{" "}
+                    {cat.description
+                      ? `- ${cat.description.substring(0, 30)}...`
+                      : ""}
                   </option>
                 ))}
               </select>
@@ -609,7 +621,10 @@ export default function AddProduct() {
                 <option value="">Select a subcategory</option>
                 {subCategories.map((sub) => (
                   <option key={sub._id} value={sub._id}>
-                    {sub.name} {sub.description ? `- ${sub.description.substring(0, 30)}...` : ""}
+                    {sub.name}{" "}
+                    {sub.description
+                      ? `- ${sub.description.substring(0, 30)}...`
+                      : ""}
                   </option>
                 ))}
               </select>
@@ -870,194 +885,208 @@ export default function AddProduct() {
 
         {/* Images */}
         {/* Images */}
-<div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-  <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-    Images
-  </h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Images
+          </h2>
 
-  {/* Main Image */}
-  <div className="mb-6">
-    <Label>Main Image</Label>
-    <div className="flex flex-col gap-3">
-      {/* File Upload Area */}
-      <div className="relative">
-        <input
-          type="file"
-          id="mainImageUpload"
-          accept="image/*"
-          className="hidden"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              // Check file size (limit to 5MB)
-              if (file.size > 5 * 1024 * 1024) {
-                showToast("Image size should be less than 5MB", "error");
-                return;
-              }
+          {/* Main Image */}
+          <div className="mb-6">
+            <Label>Main Image</Label>
+            <div className="flex flex-col gap-3">
+              {/* File Upload Area */}
+              <div className="relative">
+                <input
+                  type="file"
+                  id="mainImageUpload"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      // Check file size (limit to 5MB)
+                      if (file.size > 5 * 1024 * 1024) {
+                        showToast(
+                          "Image size should be less than 5MB",
+                          "error",
+                        );
+                        return;
+                      }
 
-              // Convert to base64
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                setFormData(prev => ({
-                  ...prev,
-                  mainImage: reader.result as string
-                }));
-              };
-              reader.readAsDataURL(file);
-            }
-          }}
-        />
-        <label
-          htmlFor="mainImageUpload"
-          className="flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors group"
-        >
-          <PhotoIcon className="w-6 h-6 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400" />
-          <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400">
-            Click to upload main image
-          </span>
-        </label>
-      </div>
-
-      {/* Image Preview with Remove Option */}
-      {formData.mainImage && (
-        <div className="relative inline-block">
-          <div className="w-32 h-32 border-2 border-blue-500 rounded-lg overflow-hidden">
-            <img
-              src={formData.mainImage}
-              alt="Main preview"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => setFormData(prev => ({ ...prev, mainImage: "" }))}
-            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition shadow-lg"
-            title="Remove image"
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </button>
-          <span className="absolute bottom-0 left-0 right-0 text-center text-xs bg-black/50 text-white py-1 rounded-b-lg">
-            Main Image
-          </span>
-        </div>
-      )}
-    </div>
-  </div>
-
-  {/* Additional Images */}
-  <div>
-    <Label>Additional Images (Up to 5)</Label>
-    <div className="flex flex-col gap-3">
-      {/* File Upload Area */}
-      <div className="relative">
-        <input
-          type="file"
-          id="additionalImagesUpload"
-          accept="image/*"
-          multiple
-          className="hidden"
-          disabled={formData.images.length >= 5}
-          onChange={async (e) => {
-            const files = Array.from(e.target.files || []);
-            
-            // Check if adding these files would exceed limit
-            if (formData.images.length + files.length > 5) {
-              showToast(`You can only upload up to 5 additional images. You have ${formData.images.length} already.`, "error");
-              return;
-            }
-
-            // Process each file
-            for (const file of files) {
-              // Check file size
-              if (file.size > 5 * 1024 * 1024) {
-                showToast(`Image ${file.name} is too large. Max 5MB`, "error");
-                continue;
-              }
-
-              // Check file type
-              if (!file.type.startsWith('image/')) {
-                showToast(`File ${file.name} is not an image`, "error");
-                continue;
-              }
-
-              // Convert to base64
-              const reader = new FileReader();
-              await new Promise((resolve) => {
-                reader.onloadend = () => {
-                  setFormData(prev => ({
-                    ...prev,
-                    images: [...prev.images, reader.result as string]
-                  }));
-                  resolve(null);
-                };
-                reader.readAsDataURL(file);
-              });
-            }
-          }}
-        />
-        <label
-          htmlFor="additionalImagesUpload"
-          className={`flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed rounded-lg cursor-pointer transition-colors group ${
-            formData.images.length >= 5
-              ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed"
-              : "border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400"
-          }`}
-        >
-          <PhotoIcon className={`w-6 h-6 ${
-            formData.images.length >= 5
-              ? "text-gray-300 dark:text-gray-600"
-              : "text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400"
-          }`} />
-          <span className={`text-sm ${
-            formData.images.length >= 5
-              ? "text-gray-400 dark:text-gray-500"
-              : "text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400"
-          }`}>
-            {formData.images.length >= 5
-              ? "Maximum 5 images reached"
-              : `Click to upload additional images (${formData.images.length}/5)`
-            }
-          </span>
-        </label>
-      </div>
-
-      {/* Image Previews Grid */}
-      {formData.images.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
-          {formData.images.map((img, index) => (
-            <div key={index} className="relative group">
-              <div className="aspect-square border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
-                <img
-                  src={img}
-                  alt={`Product ${index + 1}`}
-                  className="w-full h-full object-cover"
+                      // Convert to base64
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          mainImage: reader.result as string,
+                        }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
                 />
+                <label
+                  htmlFor="mainImageUpload"
+                  className="flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors group"
+                >
+                  <PhotoIcon className="w-6 h-6 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400">
+                    Click to upload main image
+                  </span>
+                </label>
               </div>
-              <button
-                type="button"
-                onClick={() => removeFromArray("images", index)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition shadow-lg opacity-0 group-hover:opacity-100"
-                title="Remove image"
-              >
-                <XMarkIcon className="w-4 h-4" />
-              </button>
-              <span className="absolute bottom-0 left-0 right-0 text-center text-xs bg-black/50 text-white py-1 rounded-b-lg opacity-0 group-hover:opacity-100 transition">
-                Image {index + 1}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
 
-      {/* Image Counter */}
-      {formData.images.length > 0 && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          {formData.images.length} of 5 images uploaded
-        </p>
-      )}
-    </div>
-  </div>
-</div>
+              {/* Image Preview with Remove Option */}
+              {formData.mainImage && (
+                <div className="relative inline-block">
+                  <div className="w-32 h-32 border-2 border-blue-500 rounded-lg overflow-hidden">
+                    <img
+                      src={formData.mainImage}
+                      alt="Main preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, mainImage: "" }))
+                    }
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition shadow-lg"
+                    title="Remove image"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                  <span className="absolute bottom-0 left-0 right-0 text-center text-xs bg-black/50 text-white py-1 rounded-b-lg">
+                    Main Image
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Additional Images */}
+          <div>
+            <Label>Additional Images (Up to 5)</Label>
+            <div className="flex flex-col gap-3">
+              {/* File Upload Area */}
+              <div className="relative">
+                <input
+                  type="file"
+                  id="additionalImagesUpload"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  disabled={formData.images.length >= 5}
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+
+                    // Check if adding these files would exceed limit
+                    if (formData.images.length + files.length > 5) {
+                      showToast(
+                        `You can only upload up to 5 additional images. You have ${formData.images.length} already.`,
+                        "error",
+                      );
+                      return;
+                    }
+
+                    // Process each file
+                    for (const file of files) {
+                      // Check file size
+                      if (file.size > 5 * 1024 * 1024) {
+                        showToast(
+                          `Image ${file.name} is too large. Max 5MB`,
+                          "error",
+                        );
+                        continue;
+                      }
+
+                      // Check file type
+                      if (!file.type.startsWith("image/")) {
+                        showToast(`File ${file.name} is not an image`, "error");
+                        continue;
+                      }
+
+                      // Convert to base64
+                      const reader = new FileReader();
+                      await new Promise((resolve) => {
+                        reader.onloadend = () => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            images: [...prev.images, reader.result as string],
+                          }));
+                          resolve(null);
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="additionalImagesUpload"
+                  className={`flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed rounded-lg cursor-pointer transition-colors group ${
+                    formData.images.length >= 5
+                      ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed"
+                      : "border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400"
+                  }`}
+                >
+                  <PhotoIcon
+                    className={`w-6 h-6 ${
+                      formData.images.length >= 5
+                        ? "text-gray-300 dark:text-gray-600"
+                        : "text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400"
+                    }`}
+                  />
+                  <span
+                    className={`text-sm ${
+                      formData.images.length >= 5
+                        ? "text-gray-400 dark:text-gray-500"
+                        : "text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400"
+                    }`}
+                  >
+                    {formData.images.length >= 5
+                      ? "Maximum 5 images reached"
+                      : `Click to upload additional images (${formData.images.length}/5)`}
+                  </span>
+                </label>
+              </div>
+
+              {/* Image Previews Grid */}
+              {formData.images.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+                  {formData.images.map((img, index) => (
+                    <div key={index} className="relative group">
+                      <div className="aspect-square border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800">
+                        <img
+                          src={img}
+                          alt={`Product ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFromArray("images", index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition shadow-lg opacity-0 group-hover:opacity-100"
+                        title="Remove image"
+                      >
+                        <XMarkIcon className="w-4 h-4" />
+                      </button>
+                      <span className="absolute bottom-0 left-0 right-0 text-center text-xs bg-black/50 text-white py-1 rounded-b-lg opacity-0 group-hover:opacity-100 transition">
+                        Image {index + 1}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Image Counter */}
+              {formData.images.length > 0 && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  {formData.images.length} of 5 images uploaded
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Features */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -1211,7 +1240,7 @@ export default function AddProduct() {
                   value={formData.dimensions.length}
                   onChange={handleNumberChange}
                   placeholder="Length"
-                  step="0.1"
+                  step={0.1}
                 />
                 <Input
                   type="number"
@@ -1219,7 +1248,7 @@ export default function AddProduct() {
                   value={formData.dimensions.width}
                   onChange={handleNumberChange}
                   placeholder="Width"
-                  step="0.1"
+                  step={0.1}
                 />
                 <Input
                   type="number"
@@ -1227,7 +1256,7 @@ export default function AddProduct() {
                   value={formData.dimensions.height}
                   onChange={handleNumberChange}
                   placeholder="Height"
-                  step="0.1"
+                  step={0.1}
                 />
               </div>
             </div>
@@ -1253,7 +1282,7 @@ export default function AddProduct() {
                 value={formData.weight}
                 onChange={handleNumberChange}
                 placeholder="Weight in grams"
-                step="0.1"
+                step={0.1}
               />
             </div>
             <div>
