@@ -2,11 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
-import {
-  ChevronDownIcon,
-  HorizontaLDots,
-  UserCircleIcon,
-} from "../icons";
+import { ChevronDownIcon, HorizontaLDots, UserCircleIcon } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
 import { HomeIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
@@ -26,11 +22,12 @@ const navItems: NavItem[] = [
   },
   // In your navItems array in AppSidebar
   {
-    name: "Product Management",
+    name: "Products & Categories", // Describes exactly what's inside
     icon: <SquaresPlusIcon />,
-    path: "/products", 
+    path: "/products",
     subItems: [
-      { name: "All Categories", path: "/categories", pro: false },
+      { name: "Categories", path: "/categories", pro: false },
+      { name: "Brands", path: "/all-brands", pro: false },
       { name: "All Products", path: "/all-products", pro: false },
     ],
   },

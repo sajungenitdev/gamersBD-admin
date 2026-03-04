@@ -25,6 +25,7 @@ import UserManagement from "./pages/Users/UserManagement";
 import Products from "./pages/Products/Products";
 import AddProduct from "./pages/Products/AddProduct";
 import EditProduct from "./pages/Products/EditProduct";
+import AllBrands from "./pages/Brands/AllBrands";
 
 export default function App() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
             <Route path="/all-products" element={<Products />} />
             <Route path="/products/add" element={<AddProduct />} />
             <Route path="/edit-product/:id" element={<EditProduct />} />
+            <Route path="/all-brands" element={<AllBrands />} />
 
             <Route path="/users" element={<UserManagement />} />
             {/* Others Page */}

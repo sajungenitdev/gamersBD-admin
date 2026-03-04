@@ -6,6 +6,7 @@ import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
 import {
   ChevronUpDownIcon,
+  DocumentPlusIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { PencilIcon, TrashBinIcon, EyeIcon, PlusIcon } from "../../icons";
@@ -293,7 +294,7 @@ export default function Products() {
     }
     return <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>;
   };
-
+console.log(products, "products in render");
   if (loading && products.length === 0) {
     return (
       <>
@@ -381,7 +382,7 @@ export default function Products() {
                   to="/products/add"
                   className="flex items-center justify-center p-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
                 >
-                  <PlusIcon className="w-4 h-4 mr-2" /> Add Products
+                  <DocumentPlusIcon className="w-4 h-4 mr-2" /> Add Products
                 </Link>
               </div>
             </div>
@@ -440,6 +441,9 @@ export default function Products() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Product
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Brand
+                  </th>
                   <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
                     onClick={() => handleSort("price")}
@@ -476,7 +480,7 @@ export default function Products() {
                       <SortIcon field="createdAt" />
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -522,6 +526,11 @@ export default function Products() {
                               </span>
                             )}
                           </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 dark:text-white">
+                          {product.brand?.name || product.brand || '-'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
