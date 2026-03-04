@@ -51,6 +51,7 @@ export interface Brand {
 
 export interface CreateBrandDto {
   name: string;
+  slug?: string; // ADD THIS - optional because it will be auto-generated
   description?: string;
   logo?: string | null;
   coverImage?: string | null;
@@ -66,6 +67,7 @@ export interface CreateBrandDto {
 
 export interface UpdateBrandDto {
   name?: string;
+  slug?: string; // ADD THIS - optional
   description?: string;
   logo?: string | null;
   coverImage?: string | null;
@@ -161,8 +163,10 @@ export const brandService = {
   // Create brand
   async createBrand(token: string, brandData: CreateBrandDto): Promise<Brand> {
     // Generate slug from name if not provided
-    if (brandData.name && !brandData.slug) {
-      brandData.slug = brandData.name
+    const dataToSend = { ...brandData };
+    
+    if (dataToSend.name && !dataToSend.slug) {
+      dataToSend.slug = dataToSend.name
         .toLowerCase()
         .replace(/[^a-zA-Z0-9]/g, "-")
         .replace(/-+/g, "-")
@@ -175,7 +179,7 @@ export const brandService = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(brandData),
+      body: JSON.stringify(dataToSend),
     });
 
     const data = await response.json();
@@ -194,8 +198,10 @@ export const brandService = {
     brandData: UpdateBrandDto,
   ): Promise<Brand> {
     // Update slug if name is changed
-    if (brandData.name) {
-      brandData.slug = brandData.name
+    const dataToSend = { ...brandData };
+    
+    if (dataToSend.name) {
+      dataToSend.slug = dataToSend.name
         .toLowerCase()
         .replace(/[^a-zA-Z0-9]/g, "-")
         .replace(/-+/g, "-")
@@ -208,7 +214,7 @@ export const brandService = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(brandData),
+      body: JSON.stringify(dataToSend),
     });
 
     const data = await response.json();

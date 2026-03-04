@@ -294,7 +294,7 @@ export default function Products() {
     }
     return <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>;
   };
-console.log(products, "products in render");
+  console.log(products, "products in render");
   if (loading && products.length === 0) {
     return (
       <>
@@ -529,9 +529,13 @@ console.log(products, "products in render");
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-white">
-                          {product.brand?.name || product.brand || '-'}
-                        </div>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900 dark:text-white">
+                            {(product.brand as any)?.name ||
+                              product.brand ||
+                              "-"}
+                          </div>
+                        </td>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm">

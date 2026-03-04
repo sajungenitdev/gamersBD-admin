@@ -424,22 +424,34 @@ export default function EditProduct() {
 
         // Handle brand - check if it's an ID or an object
         let brandId = "";
+
         if (product.brand) {
-          // If brand is an object with _id (populated)
-          if (typeof product.brand === "object" && product.brand._id) {
-            brandId = product.brand._id;
+          // Check if brand is an object (populated)
+          if (typeof product.brand === "object" && product.brand !== null) {
+            // Type assertion for populated brand
+            const populatedBrand = product.brand as {
+              _id: string;
+              name: string;
+            };
+            brandId = populatedBrand._id;
           }
-          // If brand is just a string ID
+          // Check if brand is a string ID
           else if (typeof product.brand === "string") {
-            brandId = product.brand;
-          }
-          // If brand is a name string (fallback)
-          else if (typeof product.brand === "string") {
-            // Try to find brand by name
-            const foundBrand = brands.find(
-              (b) => b.name.toLowerCase() === product.brand.toLowerCase(),
-            );
-            brandId = foundBrand?._id || "";
+            // Check if it's a valid MongoDB ID (24 character hex)
+            const isMongoId = /^[0-9a-fA-F]{24}$/.test(product.brand);
+
+            if (isMongoId) {
+              // It's an ID
+              brandId = product.brand;
+            } else {
+              // It's a brand name, try to find matching brand
+              const foundBrand = brands.find(
+                (b) =>
+                  b.name.toLowerCase() ===
+                  (product.brand as string).toLowerCase(),
+              );
+              brandId = foundBrand?._id || "";
+            }
           }
         }
 
