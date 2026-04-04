@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router";
 import { ChevronDownIcon, HorizontaLDots, UserCircleIcon } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
-import { HomeIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
+import { ChartBarIcon, CogIcon, DocumentTextIcon, HomeIcon, MegaphoneIcon, ShoppingBagIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
 
 type NavItem = {
   name: string;
@@ -16,19 +16,35 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <HomeIcon />, // Use HomeIcon for dashboard
+    icon: <HomeIcon />,
     name: "Dashboard",
-    path: "/dashboard", // Single dashboard entry
+    path: "/dashboard",
   },
-  // In your navItems array in AppSidebar
   {
-    name: "Products & Categories", // Describes exactly what's inside
+    name: "Products & Categories",
     icon: <SquaresPlusIcon />,
     path: "/products",
     subItems: [
       { name: "Categories", path: "/categories", pro: false },
-      { name: "Brands", path: "/all-brands", pro: false },
+      // { name: "Subcategories", path: "/subcategories", pro: false },
+      { name: "Brands", path: "/brands", pro: false },
       { name: "All Products", path: "/all-products", pro: false },
+      { name: "Add Product", path: "/products/add", pro: false },
+      { name: "Inventory / Stock", path: "/inventory", pro: false },
+      // { name: "Product Reviews", path: "/reviews", pro: false },
+    ],
+  },
+  {
+    name: "Order Management",
+    icon: <ShoppingBagIcon />, // or <TruckIcon />
+    path: "/orders",
+    subItems: [
+      { name: "All Orders", path: "/orders", pro: false },
+      { name: "Pending Orders", path: "/orders/pending", pro: false },
+      { name: "Processing Orders", path: "/orders/processing", pro: false },
+      { name: "Shipped Orders", path: "/orders/shipped", pro: false },
+      { name: "Delivered Orders", path: "/orders/delivered", pro: false },
+      { name: "Cancelled / Returns", path: "/orders/returns", pro: false },
     ],
   },
   {
@@ -38,6 +54,49 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "All Users", path: "/users", pro: false },
       { name: "My Profile", path: "/profile", pro: false },
+      { name: "User Roles", path: "/user-roles", pro: true },
+    ],
+  },
+  // {
+  //   name: "Marketing & Promotions",
+  //   icon: <MegaphoneIcon />, // or <GiftIcon />
+  //   path: "/marketing",
+  //   subItems: [
+  //     { name: "Coupons / Vouchers", path: "/coupons", pro: false },
+  //     { name: "Banner Management", path: "/banners", pro: false },
+  //     { name: "Flash Sales", path: "/flash-sales", pro: true },
+  //     { name: "Newsletter", path: "/newsletter", pro: false },
+  //   ],
+  // },
+  {
+    name: "CMS & Pages",
+    icon: <DocumentTextIcon />,
+    path: "/cms",
+    subItems: [
+      { name: "Blog Posts", path: "/blogs", pro: false },
+      { name: "FAQ", path: "/faq", pro: false },
+      { name: "About Us / Contact", path: "/pages", pro: false },
+    ],
+  },
+  // {
+  //   name: "Reports & Analytics",
+  //   icon: <ChartBarIcon />,
+  //   path: "/reports",
+  //   subItems: [
+  //     { name: "Sales Report", path: "/reports/sales", pro: false },
+  //     { name: "Product Performance", path: "/reports/products", pro: false },
+  //     { name: "User Activity", path: "/reports/users", pro: true },
+  //   ],
+  // },
+  {
+    name: "Settings",
+    icon: <CogIcon />,
+    path: "/settings",
+    subItems: [
+      { name: "General Settings", path: "/settings/general", pro: false },
+      // { name: "Payment Gateways", path: "/settings/payments", pro: false },
+      // { name: "Shipping Methods", path: "/settings/shipping", pro: false },
+      // { name: "Tax Settings", path: "/settings/tax", pro: false },
     ],
   },
 ];
