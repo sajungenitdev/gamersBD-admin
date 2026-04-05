@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router";
 import { ChevronDownIcon, HorizontaLDots, UserCircleIcon } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
-import { ChartBarIcon, CogIcon, DocumentTextIcon, HomeIcon, MegaphoneIcon, ShoppingBagIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
+import {  CogIcon, DocumentTextIcon, HomeIcon, ShoppingBagIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
 
 type NavItem = {
   name: string;
@@ -27,7 +27,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Categories", path: "/categories", pro: false },
       // { name: "Subcategories", path: "/subcategories", pro: false },
-      { name: "Brands", path: "/brands", pro: false },
+      { name: "Brands", path: "/all-brands", pro: false },
       { name: "All Products", path: "/all-products", pro: false },
       { name: "Add Product", path: "/products/add", pro: false },
       { name: "Inventory / Stock", path: "/inventory", pro: false },
