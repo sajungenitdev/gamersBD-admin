@@ -2,7 +2,6 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { CreateBrandDto, brandService } from "../../services/brand.service";
-import { useAuth } from "../../context/AuthContext";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import Button from "../../components/ui/button/Button";
@@ -14,7 +13,6 @@ interface AddBrandModalProps {
 }
 
 export default function AddBrandModal({ isOpen, onClose, onSave }: AddBrandModalProps) {
-  const { token } = useAuth();
   const [formData, setFormData] = useState<CreateBrandDto>({
     name: "",
     description: "",
@@ -53,7 +51,7 @@ export default function AddBrandModal({ isOpen, onClose, onSave }: AddBrandModal
     type: 'logo' | 'cover'
   ) => {
     const file = e.target.files?.[0];
-    if (!file || !token) return;
+    if (!file) return;
 
     if (type === 'logo') {
       setLogoFile(file);
@@ -72,10 +70,10 @@ export default function AddBrandModal({ isOpen, onClose, onSave }: AddBrandModal
     
     try {
       // Convert images to base64 if selected
-      if (logoFile && token) {
+      if (logoFile) {
         formData.logo = await brandService.imageToBase64(logoFile);
       }
-      if (coverFile && token) {
+      if (coverFile) {
         formData.coverImage = await brandService.imageToBase64(coverFile);
       }
 
@@ -97,6 +95,8 @@ export default function AddBrandModal({ isOpen, onClose, onSave }: AddBrandModal
       setCoverFile(null);
       setLogoPreview(null);
       setCoverPreview(null);
+    } catch (error) {
+      console.error("Error creating brand:", error);
     } finally {
       setSaving(false);
     }

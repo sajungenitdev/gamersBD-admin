@@ -1,55 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { brandService, Brand, CreateBrandDto, UpdateBrandDto } from '../../services/brand.service';
-import { PencilIcon, TrashBinIcon, PlusIcon } from '../../icons';
-import { DocumentPlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import PageBreadcrumb from '../../components/common/PageBreadCrumb';
-import PageMeta from '../../components/common/PageMeta';
-import Button from '../../components/ui/button/Button';
-import AddBrandModal from './AddBrandModal';
-import EditBrandModal from './EditBrandModal';
-import DeleteBrandModal from './DeleteBrandModal';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
+import {
+  brandService,
+  Brand,
+  CreateBrandDto,
+  UpdateBrandDto,
+} from "../../services/brand.service";
+import { PencilIcon, TrashBinIcon, PlusIcon } from "../../icons";
+import {
+  DocumentPlusIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
+import PageBreadcrumb from "../../components/common/PageBreadCrumb";
+import PageMeta from "../../components/common/PageMeta";
+import Button from "../../components/ui/button/Button";
+import AddBrandModal from "./AddBrandModal";
+import EditBrandModal from "./EditBrandModal";
+import DeleteBrandModal from "./DeleteBrandModal";
 
 const AllBrands = () => {
   const { token } = useAuth();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
-  
-  // Modal states
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  // Modal states - FIXED: Using consistent naming
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Toast notification
   const [toast, setToast] = useState<{
     show: boolean;
     message: string;
-    type: 'success' | 'error';
+    type: "success" | "error";
   }>({
     show: false,
-    message: '',
-    type: 'success',
+    message: "",
+    type: "success",
   });
 
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = (message: string, type: "success" | "error") => {
     setToast({ show: true, message, type });
     setTimeout(() => {
-      setToast({ show: false, message: '', type: 'success' });
+      setToast({ show: false, message: "", type: "success" });
     }, 3000);
   };
 
   // Fetch brands
   const fetchBrands = async () => {
     if (!token) return;
-    
+
     try {
       setLoading(true);
       const data = await brandService.getAllBrands(token);
       setBrands(data);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Failed to load brands', 'error');
+      showToast(
+        error instanceof Error ? error.message : "Failed to load brands",
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -61,40 +72,61 @@ const AllBrands = () => {
 
   // Filter brands based on search
   const filteredBrands = brands.filter((brand) => {
-    const matchesSearch = 
+    const matchesSearch =
       brand.name?.toLowerCase().includes(search.toLowerCase()) ||
       brand.description?.toLowerCase().includes(search.toLowerCase());
-    
+
     return matchesSearch;
   });
 
   // Handle add brand
   const handleAddBrand = async (brandData: CreateBrandDto) => {
-    if (!token) return;
-    
     try {
-      const newBrand = await brandService.createBrand(token, brandData);
-      setBrands([newBrand, ...brands]);
-      showToast('Brand created successfully!', 'success');
-      setAddModalOpen(false);
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Failed to create brand', 'error');
-      throw error;
+      // Make sure token exists before attempting to create
+      if (!token) {
+        console.error("No authentication token found");
+        showToast("Please log in to create a brand", "error");
+        return;
+      }
+
+      // Pass token as FIRST parameter, brand data as SECOND
+      await brandService.createBrand(token, brandData);
+      await fetchBrands();
+      setIsAddModalOpen(false);
+      
+      // Show success message
+      showToast("Brand created successfully!", "success");
+    } catch (error: any) {
+      console.error("Failed to add brand:", error);
+      
+      // Show detailed error to user
+      const errorMessage = error.message || "Failed to create brand";
+      showToast(errorMessage, "error");
+      throw error; // Re-throw to let modal know it failed
     }
   };
 
   // Handle edit brand
   const handleEditBrand = async (brandData: UpdateBrandDto) => {
     if (!token || !selectedBrand) return;
-    
+
     try {
-      const updatedBrand = await brandService.updateBrand(token, selectedBrand._id, brandData);
-      setBrands(brands.map(b => b._id === updatedBrand._id ? updatedBrand : b));
-      showToast('Brand updated successfully!', 'success');
-      setEditModalOpen(false);
+      const updatedBrand = await brandService.updateBrand(
+        token,
+        selectedBrand._id,
+        brandData,
+      );
+      setBrands(
+        brands.map((b) => (b._id === updatedBrand._id ? updatedBrand : b)),
+      );
+      showToast("Brand updated successfully!", "success");
+      setIsEditModalOpen(false);
       setSelectedBrand(null);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Failed to update brand', 'error');
+      showToast(
+        error instanceof Error ? error.message : "Failed to update brand",
+        "error",
+      );
       throw error;
     }
   };
@@ -102,15 +134,18 @@ const AllBrands = () => {
   // Handle delete brand
   const handleDeleteBrand = async () => {
     if (!token || !selectedBrand) return;
-    
+
     try {
       await brandService.deleteBrand(token, selectedBrand._id);
-      setBrands(brands.filter(b => b._id !== selectedBrand._id));
-      showToast('Brand deleted successfully!', 'success');
-      setDeleteModalOpen(false);
+      setBrands(brands.filter((b) => b._id !== selectedBrand._id));
+      showToast("Brand deleted successfully!", "success");
+      setIsDeleteModalOpen(false);
       setSelectedBrand(null);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Failed to delete brand', 'error');
+      showToast(
+        error instanceof Error ? error.message : "Failed to delete brand",
+        "error",
+      );
       throw error;
     }
   };
@@ -118,46 +153,65 @@ const AllBrands = () => {
   // Handle toggle popular
   const handleTogglePopular = async (brand: Brand) => {
     if (!token) return;
-    
+
     try {
-      const updatedBrand = await brandService.togglePopularStatus(token, brand._id);
-      setBrands(brands.map(b => b._id === updatedBrand._id ? updatedBrand : b));
-      showToast(`Brand ${updatedBrand.isPopular ? 'marked as popular' : 'removed from popular'}`, 'success');
+      const updatedBrand = await brandService.togglePopularStatus(
+        token,
+        brand._id,
+      );
+      setBrands(
+        brands.map((b) => (b._id === updatedBrand._id ? updatedBrand : b)),
+      );
+      showToast(
+        `Brand ${updatedBrand.isPopular ? "marked as popular" : "removed from popular"}`,
+        "success",
+      );
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Failed to update brand', 'error');
+      showToast(
+        error instanceof Error ? error.message : "Failed to update brand",
+        "error",
+      );
     }
   };
 
   // Handle toggle active
   const handleToggleActive = async (brand: Brand) => {
     if (!token) return;
-    
+
     try {
       const updatedBrand = await brandService.toggleStatus(token, brand._id);
-      setBrands(brands.map(b => b._id === updatedBrand._id ? updatedBrand : b));
-      showToast(`Brand ${updatedBrand.isActive ? 'activated' : 'deactivated'}`, 'success');
+      setBrands(
+        brands.map((b) => (b._id === updatedBrand._id ? updatedBrand : b)),
+      );
+      showToast(
+        `Brand ${updatedBrand.isActive ? "activated" : "deactivated"}`,
+        "success",
+      );
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Failed to update brand', 'error');
+      showToast(
+        error instanceof Error ? error.message : "Failed to update brand",
+        "error",
+      );
     }
   };
 
   const openEditModal = (brand: Brand) => {
     setSelectedBrand(brand);
-    setEditModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
   const openDeleteModal = (brand: Brand) => {
     setSelectedBrand(brand);
-    setDeleteModalOpen(true);
+    setIsDeleteModalOpen(true);
   };
 
   // Format date
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -180,11 +234,13 @@ const AllBrands = () => {
 
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-lg transition-all transform animate-slide-in ${
-          toast.type === 'success' 
-            ? 'bg-green-50 text-green-800 border border-green-200' 
-            : 'bg-red-50 text-red-800 border border-red-200'
-        }`}>
+        <div
+          className={`fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-lg transition-all transform animate-slide-in ${
+            toast.type === "success"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
+          }`}
+        >
           <p className="text-sm font-medium">{toast.message}</p>
         </div>
       )}
@@ -193,23 +249,33 @@ const AllBrands = () => {
         {/* Header Stats */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total Brands</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{brands.length}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Total Brands
+            </p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {brands.length}
+            </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Active Brands</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Active Brands
+            </p>
             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {brands.filter(b => b.isActive).length}
+              {brands.filter((b) => b.isActive).length}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Popular Brands</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Popular Brands
+            </p>
             <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-              {brands.filter(b => b.isPopular).length}
+              {brands.filter((b) => b.isPopular).length}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total Products</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Total Products
+            </p>
             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {brands.reduce((sum, b) => sum + (b.productCount || 0), 0)}
             </p>
@@ -233,11 +299,10 @@ const AllBrands = () => {
 
             {/* Add Brand Button */}
             <Button
-              onClick={() => setAddModalOpen(true)}
+              onClick={() => setIsAddModalOpen(true)}
               className="flex items-center gap-2"
             >
               <DocumentPlusIcon className="w-5 h-5" />
-              
               <span>Add Brand</span>
             </Button>
           </div>
@@ -275,12 +340,15 @@ const AllBrands = () => {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredBrands.length > 0 ? (
                   filteredBrands.map((brand) => (
-                    <tr key={brand._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <tr
+                      key={brand._id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           {brand.logo ? (
-                            <img 
-                              src={brand.logo} 
+                            <img
+                              src={brand.logo}
                               alt={brand.name}
                               className="w-10 h-10 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
                             />
@@ -301,7 +369,7 @@ const AllBrands = () => {
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 max-w-xs">
-                          {brand.description || '-'}
+                          {brand.description || "-"}
                         </p>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -310,21 +378,21 @@ const AllBrands = () => {
                             onClick={() => handleToggleActive(brand)}
                             className={`block text-xs px-2 py-1 rounded-full transition-colors ${
                               brand.isActive
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
-                                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50"
+                                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                             }`}
                           >
-                            {brand.isActive ? 'Active' : 'Inactive'}
+                            {brand.isActive ? "Active" : "Inactive"}
                           </button>
                           <button
                             onClick={() => handleTogglePopular(brand)}
                             className={`block text-xs px-2 py-1 rounded-full transition-colors ${
                               brand.isPopular
-                                ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50'
-                                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50"
+                                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
                             }`}
                           >
-                            {brand.isPopular ? 'Popular' : 'Not Popular'}
+                            {brand.isPopular ? "Popular" : "Not Popular"}
                           </button>
                         </div>
                       </td>
@@ -334,7 +402,7 @@ const AllBrands = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {brand.foundedYear || '-'}
+                        {brand.foundedYear || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {formatDate(brand.createdAt)}
@@ -364,7 +432,9 @@ const AllBrands = () => {
                     <td colSpan={7} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
-                          {search ? 'No brands found matching your search' : 'No brands yet'}
+                          {search
+                            ? "No brands found matching your search"
+                            : "No brands yet"}
                         </p>
                         {search && (
                           <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
@@ -381,28 +451,28 @@ const AllBrands = () => {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Modals - FIXED: Using correct state variables */}
       <AddBrandModal
-        isOpen={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddBrand}
       />
 
       <EditBrandModal
-        isOpen={editModalOpen}
+        isOpen={isEditModalOpen}
         brand={selectedBrand}
         onClose={() => {
-          setEditModalOpen(false);
+          setIsEditModalOpen(false);
           setSelectedBrand(null);
         }}
         onSave={handleEditBrand}
       />
 
       <DeleteBrandModal
-        isOpen={deleteModalOpen}
+        isOpen={isDeleteModalOpen}
         brand={selectedBrand}
         onClose={() => {
-          setDeleteModalOpen(false);
+          setIsDeleteModalOpen(false);
           setSelectedBrand(null);
         }}
         onConfirm={handleDeleteBrand}

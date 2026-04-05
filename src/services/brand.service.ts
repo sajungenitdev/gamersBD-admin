@@ -51,7 +51,7 @@ export interface Brand {
 
 export interface CreateBrandDto {
   name: string;
-  slug?: string; // ADD THIS - optional because it will be auto-generated
+  slug?: string;
   description?: string;
   logo?: string | null;
   coverImage?: string | null;
@@ -67,7 +67,7 @@ export interface CreateBrandDto {
 
 export interface UpdateBrandDto {
   name?: string;
-  slug?: string; // ADD THIS - optional
+  slug?: string;
   description?: string;
   logo?: string | null;
   coverImage?: string | null;
@@ -80,6 +80,34 @@ export interface UpdateBrandDto {
   isPopular?: boolean;
   isActive?: boolean;
 }
+
+// Helper function to generate slug from name
+const generateSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+};
+
+// Helper function to handle API responses
+const handleResponse = async (response: Response) => {
+  const data = await response.json();
+  
+  if (!response.ok) {
+    // Log the error for debugging
+    console.error(`API Error (${response.status}):`, data);
+    
+    // Throw a more descriptive error
+    throw new Error(
+      data.message || 
+      data.error || 
+      `Request failed with status ${response.status}`
+    );
+  }
+  
+  return data;
+};
 
 export const brandService = {
   // Get all brands
@@ -95,6 +123,10 @@ export const brandService = {
       search?: string;
     },
   ): Promise<Brand[]> {
+    if (!token) {
+      throw new Error("Authentication token is required");
+    }
+
     const queryParams = new URLSearchParams();
 
     if (params) {
@@ -112,17 +144,16 @@ export const brandService = {
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to fetch brands");
-    }
-
+    const data = await handleResponse(response);
     return data.data;
   },
 
   // Get popular brands
   async getPopularBrands(token: string, limit: number = 8): Promise<Brand[]> {
+    if (!token) {
+      throw new Error("Authentication token is required");
+    }
+
     const response = await fetch(`${API_URL}/brands/popular?limit=${limit}`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -130,12 +161,7 @@ export const brandService = {
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to fetch popular brands");
-    }
-
+    const data = await handleResponse(response);
     return data.data;
   },
 
@@ -144,6 +170,10 @@ export const brandService = {
     token: string,
     identifier: string,
   ): Promise<Brand> {
+    if (!token) {
+      throw new Error("Authentication token is required");
+    }
+
     const response = await fetch(`${API_URL}/brands/${identifier}`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -151,27 +181,36 @@ export const brandService = {
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to fetch brand");
-    }
-
+    const data = await handleResponse(response);
     return data.data;
   },
 
   // Create brand
   async createBrand(token: string, brandData: CreateBrandDto): Promise<Brand> {
+    // Validate token
+    if (!token) {
+      throw new Error("Authentication token is required. Please log in.");
+    }
+
+    // Validate required fields
+    if (!brandData.name) {
+      throw new Error("Brand name is required");
+    }
+
     // Generate slug from name if not provided
     const dataToSend = { ...brandData };
     
     if (dataToSend.name && !dataToSend.slug) {
-      dataToSend.slug = dataToSend.name
-        .toLowerCase()
-        .replace(/[^a-zA-Z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "");
+      dataToSend.slug = generateSlug(dataToSend.name);
     }
+
+    // Log the request for debugging (remove in production)
+    console.log("Creating brand with data:", {
+      ...dataToSend,
+      logo: dataToSend.logo ? "[BASE64_IMAGE]" : undefined,
+      coverImage: dataToSend.coverImage ? "[BASE64_IMAGE]" : undefined,
+    });
+    console.log("Using token:", token.substring(0, 20) + "...");
 
     const response = await fetch(`${API_URL}/brands`, {
       method: "POST",
@@ -182,12 +221,7 @@ export const brandService = {
       body: JSON.stringify(dataToSend),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to create brand");
-    }
-
+    const data = await handleResponse(response);
     return data.data;
   },
 
@@ -197,15 +231,19 @@ export const brandService = {
     id: string,
     brandData: UpdateBrandDto,
   ): Promise<Brand> {
+    if (!token) {
+      throw new Error("Authentication token is required");
+    }
+
+    if (!id) {
+      throw new Error("Brand ID is required");
+    }
+
     // Update slug if name is changed
     const dataToSend = { ...brandData };
     
     if (dataToSend.name) {
-      dataToSend.slug = dataToSend.name
-        .toLowerCase()
-        .replace(/[^a-zA-Z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "");
+      dataToSend.slug = generateSlug(dataToSend.name);
     }
 
     const response = await fetch(`${API_URL}/brands/${id}`, {
@@ -217,17 +255,20 @@ export const brandService = {
       body: JSON.stringify(dataToSend),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to update brand");
-    }
-
+    const data = await handleResponse(response);
     return data.data;
   },
 
   // Delete brand
   async deleteBrand(token: string, id: string): Promise<void> {
+    if (!token) {
+      throw new Error("Authentication token is required");
+    }
+
+    if (!id) {
+      throw new Error("Brand ID is required");
+    }
+
     const response = await fetch(`${API_URL}/brands/${id}`, {
       method: "DELETE",
       headers: {
@@ -236,15 +277,15 @@ export const brandService = {
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to delete brand");
-    }
+    await handleResponse(response);
   },
 
   // Toggle brand status (active/inactive)
   async toggleStatus(token: string, id: string): Promise<Brand> {
+    if (!token) {
+      throw new Error("Authentication token is required");
+    }
+
     const response = await fetch(`${API_URL}/brands/${id}/toggle-status`, {
       method: "PATCH",
       headers: {
@@ -253,17 +294,16 @@ export const brandService = {
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to toggle brand status");
-    }
-
+    const data = await handleResponse(response);
     return data.data;
   },
 
   // Toggle popular status
   async togglePopularStatus(token: string, id: string): Promise<Brand> {
+    if (!token) {
+      throw new Error("Authentication token is required");
+    }
+
     const response = await fetch(`${API_URL}/brands/${id}/toggle-popular`, {
       method: "PATCH",
       headers: {
@@ -272,12 +312,7 @@ export const brandService = {
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to toggle popular status");
-    }
-
+    const data = await handleResponse(response);
     return data.data;
   },
 
@@ -287,6 +322,14 @@ export const brandService = {
     brandIds: string[],
     updates: UpdateBrandDto,
   ): Promise<any> {
+    if (!token) {
+      throw new Error("Authentication token is required");
+    }
+
+    if (!brandIds || brandIds.length === 0) {
+      throw new Error("At least one brand ID is required");
+    }
+
     const response = await fetch(`${API_URL}/brands/bulk`, {
       method: "PATCH",
       headers: {
@@ -296,17 +339,16 @@ export const brandService = {
       body: JSON.stringify({ brandIds, updates }),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to bulk update brands");
-    }
-
+    const data = await handleResponse(response);
     return data.data;
   },
 
   // Update product counts for all brands
   async updateProductCounts(token: string): Promise<void> {
+    if (!token) {
+      throw new Error("Authentication token is required");
+    }
+
     const response = await fetch(`${API_URL}/brands/update-counts`, {
       method: "POST",
       headers: {
@@ -315,11 +357,7 @@ export const brandService = {
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to update product counts");
-    }
+    await handleResponse(response);
   },
 
   // Convert image to base64
