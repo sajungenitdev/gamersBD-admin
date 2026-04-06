@@ -82,18 +82,12 @@ const AllBlogs = () => {
   });
 
   // Handle create blog
-  const handleCreateBlog = async (blogData: any) => {
-    console.log("handleCreateBlog called with:", blogData);
-
+  const handleCreateBlog = async (blogData: any): Promise<void> => {
     try {
-      const result = await blogService.createBlog(blogData);
-      console.log("Create blog result:", result);
-
-      // Refresh the blogs list
+      await blogService.createBlog(blogData);
       await fetchBlogs();
-
+      setIsCreateModalOpen(false);
       showToast("Blog created successfully!", "success");
-      return result;
     } catch (error: any) {
       console.error("Failed to create blog:", error);
       showToast(error.message || "Failed to create blog", "error");
@@ -447,7 +441,7 @@ const AllBlogs = () => {
       <CreateBlogModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSave={handleCreateBlog}
+        onSave={handleCreateBlog} // This should work now
       />
 
       {/* Edit Blog Modal */}
