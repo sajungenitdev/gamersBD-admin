@@ -26,6 +26,9 @@ import Products from "./pages/Products/Products";
 import AddProduct from "./pages/Products/AddProduct";
 import EditProduct from "./pages/Products/EditProduct";
 import AllBrands from "./pages/Brands/AllBrands";
+import AllBlogs from "./pages/Blogs/AllBlogs";
+import Contacts from "./pages/Contacts/Contacts";
+import Faq from "./pages/Faq/Faq";
 
 export default function App() {
   return (
@@ -57,6 +60,9 @@ export default function App() {
             <Route path="/products/add" element={<AddProduct />} />
             <Route path="/edit-product/:id" element={<EditProduct />} />
             <Route path="/all-brands" element={<AllBrands />} />
+            <Route path="/all-blogs" element={<AllBlogs />} />
+            <Route path="/contacts" element={<Contacts />} />
+            <Route path="/faq" element={<Faq />} />
 
             <Route path="/users" element={<UserManagement />} />
             {/* Others Page */}
