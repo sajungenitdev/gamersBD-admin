@@ -73,7 +73,7 @@ export default function CreateBlogModal({
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       setError("Please upload an image file");
       return;
     }
@@ -108,7 +108,7 @@ export default function CreateBlogModal({
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       setError("Please upload an image file for avatar");
       return;
     }
@@ -240,7 +240,7 @@ export default function CreateBlogModal({
     try {
       const result = await onSave(blogData);
       console.log("Save result:", result);
-      
+
       // Reset form on success
       setFormData({
         title: "",
@@ -263,7 +263,7 @@ export default function CreateBlogModal({
         },
       });
       setTagInput("");
-      
+
       // Close modal after successful save
       onClose();
     } catch (err: any) {
@@ -278,7 +278,10 @@ export default function CreateBlogModal({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4">
           <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
@@ -427,14 +430,14 @@ export default function CreateBlogModal({
                       value={tagInput}
                       onChange={(e: any) => setTagInput(e.target.value)}
                       placeholder="Add tag"
-                      onKeyPress={(e: any) => {
+                      onKeyDown={(e: React.KeyboardEvent) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
                           handleAddTag();
                         }
                       }}
                     />
-                    <Button type="button" onClick={handleAddTag} size="small">
+                    <Button type="button" onClick={handleAddTag} size="sm">
                       Add
                     </Button>
                   </div>
@@ -550,7 +553,9 @@ export default function CreateBlogModal({
                         {formData.author.avatar ? "Change" : "Upload"} Avatar
                       </button>
                       {uploadingAvatar && (
-                        <span className="text-xs text-blue-600">Uploading...</span>
+                        <span className="text-xs text-blue-600">
+                          Uploading...
+                        </span>
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
@@ -580,7 +585,10 @@ export default function CreateBlogModal({
                     type="checkbox"
                     checked={formData.isPublished}
                     onChange={(e) =>
-                      setFormData({ ...formData, isPublished: e.target.checked })
+                      setFormData({
+                        ...formData,
+                        isPublished: e.target.checked,
+                      })
                     }
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
@@ -597,7 +605,13 @@ export default function CreateBlogModal({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={saving || !formData.title || !formData.excerpt || !formData.content || !formData.author.name}
+                  disabled={
+                    saving ||
+                    !formData.title ||
+                    !formData.excerpt ||
+                    !formData.content ||
+                    !formData.author.name
+                  }
                   className="flex-1"
                 >
                   {saving ? "Creating..." : "Create Blog"}
