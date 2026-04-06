@@ -29,6 +29,7 @@ import AllBrands from "./pages/Brands/AllBrands";
 import AllBlogs from "./pages/Blogs/AllBlogs";
 import Contacts from "./pages/Contacts/Contacts";
 import Faq from "./pages/Faq/Faq";
+import SiteSettingsPage from "./pages/SiteSettings/SiteSettings";
 
 export default function App() {
   return (
@@ -63,6 +64,7 @@ export default function App() {
             <Route path="/all-blogs" element={<AllBlogs />} />
             <Route path="/contacts" element={<Contacts />} />
             <Route path="/faq" element={<Faq />} />
+            <Route path="/site-settings" element={<SiteSettingsPage />} />
 
             <Route path="/users" element={<UserManagement />} />
             {/* Others Page */}

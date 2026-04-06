@@ -75,7 +75,8 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Blog Posts", path: "/all-blogs", pro: false },
       { name: "FAQ", path: "/faq", pro: false },
-      { name: "About Us / Contact", path: "/pages", pro: false },
+      { name: "About Us", path: "/pages", pro: false },
+      { name: "Contacts Messages", path: "/contacts", pro: false },
     ],
   },
   // {
@@ -91,14 +92,7 @@ const navItems: NavItem[] = [
   {
     name: "Settings",
     icon: <CogIcon />,
-    path: "/settings",
-    subItems: [
-      { name: "General Settings", path: "/settings/general", pro: false },
-      { name: "Contacts Messages", path: "/contacts", pro: false },
-      // { name: "Payment Gateways", path: "/settings/payments", pro: false },
-      // { name: "Shipping Methods", path: "/settings/shipping", pro: false },
-      // { name: "Tax Settings", path: "/settings/tax", pro: false },
-    ],
+    path: "/site-settings",
   },
 ];
 
