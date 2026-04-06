@@ -6,10 +6,11 @@ import {
   CreateBrandDto,
   UpdateBrandDto,
 } from "../../services/brand.service";
-import { PencilIcon, TrashBinIcon, PlusIcon } from "../../icons";
+import { PencilIcon, TrashBinIcon } from "../../icons";
 import {
   DocumentPlusIcon,
   MagnifyingGlassIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
@@ -25,7 +26,7 @@ const AllBrands = () => {
   const [search, setSearch] = useState("");
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
 
-  // Modal states - FIXED: Using consistent naming
+  // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -50,13 +51,20 @@ const AllBrands = () => {
 
   // Fetch brands
   const fetchBrands = async () => {
-    if (!token) return;
+    if (!token) {
+      console.log("No token, skipping fetch");
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
+      console.log("Fetching brands...");
       const data = await brandService.getAllBrands(token);
+      console.log("Brands fetched:", data);
       setBrands(data);
     } catch (error) {
+      console.error("Fetch brands error:", error);
       showToast(
         error instanceof Error ? error.message : "Failed to load brands",
         "error",
@@ -67,39 +75,38 @@ const AllBrands = () => {
   };
 
   useEffect(() => {
-    fetchBrands();
+    if (token) {
+      fetchBrands();
+    } else {
+      setLoading(false);
+    }
   }, [token]);
-
-  // Filter brands based on search
-  const filteredBrands = brands.filter((brand) => {
-    const matchesSearch =
-      brand.name?.toLowerCase().includes(search.toLowerCase()) ||
-      brand.description?.toLowerCase().includes(search.toLowerCase());
-
-    return matchesSearch;
-  });
 
   // Handle add brand
   const handleAddBrand = async (brandData: CreateBrandDto) => {
+    console.log("Creating brand with data:", brandData);
+    
     try {
-      // Make sure token exists before attempting to create
       if (!token) {
-        console.error("No authentication token found");
         showToast("Please log in to create a brand", "error");
         return;
       }
 
-      // Pass token as FIRST parameter, brand data as SECOND
-      await brandService.createBrand(token, brandData);
-      await fetchBrands();
+      // Create the brand
+      const newBrand = await brandService.createBrand(token, brandData);
+      console.log("Brand created successfully:", newBrand);
+      
+      // Close modal FIRST
       setIsAddModalOpen(false);
       
-      // Show success message
+      // Show success toast
       showToast("Brand created successfully!", "success");
+      
+      // Refresh the brands list
+      await fetchBrands();
+      
     } catch (error: any) {
       console.error("Failed to add brand:", error);
-      
-      // Show detailed error to user
       const errorMessage = error.message || "Failed to create brand";
       showToast(errorMessage, "error");
       throw error; // Re-throw to let modal know it failed
@@ -123,6 +130,7 @@ const AllBrands = () => {
       setIsEditModalOpen(false);
       setSelectedBrand(null);
     } catch (error) {
+      console.error("Edit brand error:", error);
       showToast(
         error instanceof Error ? error.message : "Failed to update brand",
         "error",
@@ -142,6 +150,7 @@ const AllBrands = () => {
       setIsDeleteModalOpen(false);
       setSelectedBrand(null);
     } catch (error) {
+      console.error("Delete brand error:", error);
       showToast(
         error instanceof Error ? error.message : "Failed to delete brand",
         "error",
@@ -167,6 +176,7 @@ const AllBrands = () => {
         "success",
       );
     } catch (error) {
+      console.error("Toggle popular error:", error);
       showToast(
         error instanceof Error ? error.message : "Failed to update brand",
         "error",
@@ -188,6 +198,7 @@ const AllBrands = () => {
         "success",
       );
     } catch (error) {
+      console.error("Toggle active error:", error);
       showToast(
         error instanceof Error ? error.message : "Failed to update brand",
         "error",
@@ -232,16 +243,24 @@ const AllBrands = () => {
       <PageMeta title="Brands | Admin" description="Manage brands" />
       <PageBreadcrumb pageTitle="Brand Management" />
 
-      {/* Toast Notification */}
+      {/* Toast Notification - Make sure this is visible */}
       {toast.show && (
-        <div
-          className={`fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-lg transition-all transform animate-slide-in ${
-            toast.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
+        <div className="fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-lg transition-all transform animate-slide-in">
+          <div className={`flex items-center gap-2 ${
+            toast.type === "success" 
+              ? "bg-green-50 text-green-800 border border-green-200" 
               : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          <p className="text-sm font-medium">{toast.message}</p>
+          } p-3 rounded-lg`}>
+            <div className="flex-1">
+              <p className="text-sm font-medium">{toast.message}</p>
+            </div>
+            <button
+              onClick={() => setToast({ show: false, message: "", type: "success" })}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 
@@ -338,8 +357,8 @@ const AllBrands = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredBrands.length > 0 ? (
-                  filteredBrands.map((brand) => (
+                {brands.length > 0 ? (
+                  brands.map((brand) => (
                     <tr
                       key={brand._id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
@@ -451,7 +470,7 @@ const AllBrands = () => {
         </div>
       </div>
 
-      {/* Modals - FIXED: Using correct state variables */}
+      {/* Modals */}
       <AddBrandModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}

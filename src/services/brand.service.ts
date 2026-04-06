@@ -226,95 +226,75 @@ export const brandService = {
   },
 
   // Update brand
-  async updateBrand(
-    token: string,
-    id: string,
-    brandData: UpdateBrandDto,
-  ): Promise<Brand> {
-    if (!token) {
-      throw new Error("Authentication token is required");
-    }
+async updateBrand(id: string, brandData: UpdateBrandDto): Promise<Brand> {
+  if (!id) {
+    throw new Error("Brand ID is required");
+  }
 
-    if (!id) {
-      throw new Error("Brand ID is required");
-    }
+  // Update slug if name is changed
+  const dataToSend = { ...brandData };
+  
+  if (dataToSend.name) {
+    dataToSend.slug = generateSlug(dataToSend.name);
+  }
 
-    // Update slug if name is changed
-    const dataToSend = { ...brandData };
-    
-    if (dataToSend.name) {
-      dataToSend.slug = generateSlug(dataToSend.name);
-    }
+  const response = await fetch(`${API_URL}/brands/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      // No Authorization header needed
+    },
+    body: JSON.stringify(dataToSend),
+  });
 
-    const response = await fetch(`${API_URL}/brands/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(dataToSend),
-    });
-
-    const data = await handleResponse(response);
-    return data.data;
-  },
+  const data = await handleResponse(response);
+  return data.data;
+},
 
   // Delete brand
-  async deleteBrand(token: string, id: string): Promise<void> {
-    if (!token) {
-      throw new Error("Authentication token is required");
-    }
+async deleteBrand(id: string): Promise<void> {
+  if (!id) {
+    throw new Error("Brand ID is required");
+  }
 
-    if (!id) {
-      throw new Error("Brand ID is required");
-    }
+  const response = await fetch(`${API_URL}/brands/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      // No Authorization header needed
+    },
+  });
 
-    const response = await fetch(`${API_URL}/brands/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    await handleResponse(response);
-  },
+  await handleResponse(response);
+},
 
   // Toggle brand status (active/inactive)
-  async toggleStatus(token: string, id: string): Promise<Brand> {
-    if (!token) {
-      throw new Error("Authentication token is required");
-    }
+async toggleStatus(id: string): Promise<Brand> {
+  const response = await fetch(`${API_URL}/brands/${id}/toggle-status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      // No Authorization header needed
+    },
+  });
 
-    const response = await fetch(`${API_URL}/brands/${id}/toggle-status`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    const data = await handleResponse(response);
-    return data.data;
-  },
+  const data = await handleResponse(response);
+  return data.data;
+},
 
   // Toggle popular status
-  async togglePopularStatus(token: string, id: string): Promise<Brand> {
-    if (!token) {
-      throw new Error("Authentication token is required");
-    }
+async togglePopularStatus(id: string): Promise<Brand> {
+  const response = await fetch(`${API_URL}/brands/${id}/toggle-popular`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      // No Authorization header needed
+    },
+  });
 
-    const response = await fetch(`${API_URL}/brands/${id}/toggle-popular`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    const data = await handleResponse(response);
-    return data.data;
-  },
+  const data = await handleResponse(response);
+  return data.data;
+},
 
   // Bulk update brands
   async bulkUpdateBrands(
