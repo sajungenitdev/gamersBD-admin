@@ -66,7 +66,7 @@ const Contacts = () => {
 
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/contacts", {
+      const response = await fetch("https://gamersbd-server.onrender.com/api/contacts", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -101,7 +101,7 @@ const Contacts = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/contacts/${id}/status`,
+        `https://gamersbd-server.onrender.com/api/contacts/${id}/status`,
         {
           method: "PATCH",
           headers: {
@@ -141,7 +141,7 @@ const Contacts = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/contacts/${selectedContact._id}`,
+        `https://gamersbd-server.onrender.com/api/contacts/${selectedContact._id}`,
         {
           method: "DELETE",
           headers: {
@@ -545,7 +545,7 @@ const ViewMessageModal = ({
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:5000/api/contacts/${contact._id}/reply`,
+        `https://gamersbd-server.onrender.com/api/contacts/${contact._id}/reply`,
         {
           method: "POST",
           headers: {

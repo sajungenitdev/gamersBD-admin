@@ -1,5 +1,5 @@
 // services/faq.service.ts
-const API_URL = "http://localhost:5000/api/faqs";
+const API_URL = "https://gamersbd-server.onrender.com/api/faqs";
 
 export interface FAQ {
   _id: string;

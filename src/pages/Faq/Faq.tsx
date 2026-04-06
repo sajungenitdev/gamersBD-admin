@@ -80,7 +80,7 @@ const Faq = () => {
 
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/faqs", {
+      const response = await fetch("https://gamersbd-server.onrender.com/api/faqs", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -122,7 +122,7 @@ const Faq = () => {
   // Create FAQ
   const handleCreateFAQ = async (faqData: any) => {
     try {
-      const response = await fetch("http://localhost:5000/api/faqs", {
+      const response = await fetch("https://gamersbd-server.onrender.com/api/faqs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,7 +152,7 @@ const Faq = () => {
     if (!selectedFaq) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/faqs/${selectedFaq._id}`, {
+      const response = await fetch(`https://gamersbd-server.onrender.com/api/faqs/${selectedFaq._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -183,7 +183,7 @@ const Faq = () => {
     if (!selectedFaq) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/faqs/${selectedFaq._id}`, {
+      const response = await fetch(`https://gamersbd-server.onrender.com/api/faqs/${selectedFaq._id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -209,7 +209,7 @@ const Faq = () => {
   // Toggle popular status
   const togglePopular = async (faq: FAQ) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/faqs/${faq._id}`, {
+      const response = await fetch(`https://gamersbd-server.onrender.com/api/faqs/${faq._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

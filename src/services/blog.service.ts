@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/blogs";
+const API_URL = "https://gamersbd-server.onrender.com/api/blogs";
 
 export interface Blog {
   _id: string;
