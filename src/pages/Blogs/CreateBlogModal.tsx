@@ -72,13 +72,11 @@ export default function CreateBlogModal({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       setError("Please upload an image file");
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError("Image size should be less than 5MB");
       return;
@@ -107,13 +105,11 @@ export default function CreateBlogModal({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       setError("Please upload an image file for avatar");
       return;
     }
 
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       setError("Avatar size should be less than 2MB");
       return;
@@ -140,7 +136,6 @@ export default function CreateBlogModal({
     }
   };
 
-  // Remove image
   const removeImage = () => {
     setFormData({
       ...formData,
@@ -153,7 +148,6 @@ export default function CreateBlogModal({
     }
   };
 
-  // Remove avatar
   const removeAvatar = () => {
     setFormData({
       ...formData,
@@ -191,7 +185,6 @@ export default function CreateBlogModal({
     setSaving(true);
     setError(null);
 
-    // Validate required fields
     if (!formData.title.trim()) {
       setError("Title is required");
       setSaving(false);
@@ -213,7 +206,6 @@ export default function CreateBlogModal({
       return;
     }
 
-    // Prepare data for API
     const blogData = {
       title: formData.title.trim(),
       excerpt: formData.excerpt.trim(),
@@ -231,17 +223,8 @@ export default function CreateBlogModal({
       },
     };
 
-    console.log("Submitting blog data:", {
-      ...blogData,
-      image: blogData.image ? "[BASE64_IMAGE]" : "No image",
-      authorAvatar: blogData.author.avatar ? "[BASE64_AVATAR]" : "No avatar",
-    });
-
     try {
-      const result = await onSave(blogData);
-      console.log("Save result:", result);
-
-      // Reset form on success
+      await onSave(blogData);
       setFormData({
         title: "",
         excerpt: "",
@@ -263,8 +246,6 @@ export default function CreateBlogModal({
         },
       });
       setTagInput("");
-
-      // Close modal after successful save
       onClose();
     } catch (err: any) {
       console.error("Error creating blog:", err);
@@ -285,7 +266,6 @@ export default function CreateBlogModal({
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4">
           <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
-            {/* Header */}
             <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Create New Blog Post
@@ -298,7 +278,6 @@ export default function CreateBlogModal({
               </button>
             </div>
 
-            {/* Error Message */}
             {error && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
                 {error}
@@ -306,7 +285,6 @@ export default function CreateBlogModal({
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Title */}
               <div>
                 <Label>
                   Title <span className="text-red-500">*</span>
@@ -322,7 +300,6 @@ export default function CreateBlogModal({
                 />
               </div>
 
-              {/* Excerpt */}
               <div>
                 <Label>
                   Excerpt <span className="text-red-500">*</span>
@@ -339,7 +316,6 @@ export default function CreateBlogModal({
                 />
               </div>
 
-              {/* Content */}
               <div>
                 <Label>
                   Content <span className="text-red-500">*</span>
@@ -403,7 +379,6 @@ export default function CreateBlogModal({
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                {/* Category */}
                 <div>
                   <Label>Category</Label>
                   <select
@@ -425,18 +400,14 @@ export default function CreateBlogModal({
                 <div>
                   <Label>Tags</Label>
                   <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      value={tagInput}
-                      onChange={(e: any) => setTagInput(e.target.value)}
-                      placeholder="Add tag"
-                      onKeyDown={(e: React.KeyboardEvent) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                    />
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        value={tagInput}
+                        onChange={(e: any) => setTagInput(e.target.value)}
+                        placeholder="Add tag"
+                      />
+                    </div>
                     <Button type="button" onClick={handleAddTag} size="sm">
                       Add
                     </Button>

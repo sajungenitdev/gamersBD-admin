@@ -59,7 +59,6 @@ export default function EditBlogModal({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  // Convert file to base64
   const convertToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -69,18 +68,15 @@ export default function EditBlogModal({
     });
   };
 
-  // Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       setError("Please upload an image file");
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError("Image size should be less than 5MB");
       return;
@@ -104,18 +100,15 @@ export default function EditBlogModal({
     }
   };
 
-  // Handle avatar upload
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       setError("Please upload an image file for avatar");
       return;
     }
 
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       setError("Avatar size should be less than 2MB");
       return;
@@ -142,7 +135,6 @@ export default function EditBlogModal({
     }
   };
 
-  // Remove image
   const removeImage = () => {
     setFormData({
       ...formData,
@@ -155,7 +147,6 @@ export default function EditBlogModal({
     }
   };
 
-  // Remove avatar
   const removeAvatar = () => {
     setFormData({
       ...formData,
@@ -171,7 +162,6 @@ export default function EditBlogModal({
     }
   };
 
-  // Load blog data when modal opens
   useEffect(() => {
     if (blog) {
       setFormData({
@@ -223,7 +213,6 @@ export default function EditBlogModal({
     setSaving(true);
     setError(null);
 
-    // Validate required fields
     if (!formData.title.trim()) {
       setError("Title is required");
       setSaving(false);
@@ -245,7 +234,6 @@ export default function EditBlogModal({
       return;
     }
 
-    // Prepare data for API
     const blogData = {
       title: formData.title.trim(),
       excerpt: formData.excerpt.trim(),
@@ -262,12 +250,6 @@ export default function EditBlogModal({
         email: formData.author.email || "",
       },
     };
-
-    console.log("Updating blog data:", {
-      ...blogData,
-      image: blogData.image ? "[BASE64_IMAGE]" : "No image",
-      authorAvatar: blogData.author.avatar ? "[BASE64_AVATAR]" : "No avatar",
-    });
 
     try {
       await onSave(blogData);
@@ -291,7 +273,6 @@ export default function EditBlogModal({
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4">
           <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
-            {/* Header */}
             <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Edit Blog Post
@@ -304,7 +285,6 @@ export default function EditBlogModal({
               </button>
             </div>
 
-            {/* Error Message */}
             {error && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
                 {error}
@@ -312,7 +292,6 @@ export default function EditBlogModal({
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Title */}
               <div>
                 <Label>
                   Title <span className="text-red-500">*</span>
@@ -328,7 +307,6 @@ export default function EditBlogModal({
                 />
               </div>
 
-              {/* Excerpt */}
               <div>
                 <Label>
                   Excerpt <span className="text-red-500">*</span>
@@ -340,12 +318,11 @@ export default function EditBlogModal({
                   }
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="Brief description of the blog post"
+                  placeholder="Brief description"
                   required
                 />
               </div>
 
-              {/* Content */}
               <div>
                 <Label>
                   Content <span className="text-red-500">*</span>
@@ -357,7 +334,7 @@ export default function EditBlogModal({
                   }
                   rows={8}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono"
-                  placeholder="Full blog content (HTML supported)"
+                  placeholder="Full content"
                   required
                 />
               </div>
@@ -409,7 +386,6 @@ export default function EditBlogModal({
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                {/* Category */}
                 <div>
                   <Label>Category</Label>
                   <select
@@ -431,21 +407,15 @@ export default function EditBlogModal({
                 <div>
                   <Label>Tags</Label>
                   <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      value={tagInput}
-                      onChange={(e: any) => setTagInput(e.target.value)}
-                      placeholder="Add tag"
-                      onKeyDown={(e: React.KeyboardEvent) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddTag();
-                        }
-                      }}
-                    />
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        value={tagInput}
+                        onChange={(e: any) => setTagInput(e.target.value)}
+                        placeholder="Add tag"
+                      />
+                    </div>
                     <Button type="button" onClick={handleAddTag} size="sm">
-                      {" "}
-                      {/* Change size="small" to size="sm" */}
                       Add
                     </Button>
                   </div>
