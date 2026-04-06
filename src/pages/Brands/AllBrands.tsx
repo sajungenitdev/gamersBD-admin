@@ -85,7 +85,7 @@ const AllBrands = () => {
   // Handle add brand
   const handleAddBrand = async (brandData: CreateBrandDto) => {
     console.log("Creating brand with data:", brandData);
-    
+
     try {
       if (!token) {
         showToast("Please log in to create a brand", "error");
@@ -95,16 +95,15 @@ const AllBrands = () => {
       // Create the brand
       const newBrand = await brandService.createBrand(token, brandData);
       console.log("Brand created successfully:", newBrand);
-      
+
       // Close modal FIRST
       setIsAddModalOpen(false);
-      
+
       // Show success toast
       showToast("Brand created successfully!", "success");
-      
+
       // Refresh the brands list
       await fetchBrands();
-      
     } catch (error: any) {
       console.error("Failed to add brand:", error);
       const errorMessage = error.message || "Failed to create brand";
@@ -115,11 +114,10 @@ const AllBrands = () => {
 
   // Handle edit brand
   const handleEditBrand = async (brandData: UpdateBrandDto) => {
-    if (!token || !selectedBrand) return;
+    if (!selectedBrand) return;
 
     try {
       const updatedBrand = await brandService.updateBrand(
-        token,
         selectedBrand._id,
         brandData,
       );
@@ -141,10 +139,10 @@ const AllBrands = () => {
 
   // Handle delete brand
   const handleDeleteBrand = async () => {
-    if (!token || !selectedBrand) return;
+    if (!selectedBrand) return;
 
     try {
-      await brandService.deleteBrand(token, selectedBrand._id);
+      await brandService.deleteBrand(selectedBrand._id);
       setBrands(brands.filter((b) => b._id !== selectedBrand._id));
       showToast("Brand deleted successfully!", "success");
       setIsDeleteModalOpen(false);
@@ -161,13 +159,8 @@ const AllBrands = () => {
 
   // Handle toggle popular
   const handleTogglePopular = async (brand: Brand) => {
-    if (!token) return;
-
     try {
-      const updatedBrand = await brandService.togglePopularStatus(
-        token,
-        brand._id,
-      );
+      const updatedBrand = await brandService.togglePopularStatus(brand._id);
       setBrands(
         brands.map((b) => (b._id === updatedBrand._id ? updatedBrand : b)),
       );
@@ -186,10 +179,8 @@ const AllBrands = () => {
 
   // Handle toggle active
   const handleToggleActive = async (brand: Brand) => {
-    if (!token) return;
-
     try {
-      const updatedBrand = await brandService.toggleStatus(token, brand._id);
+      const updatedBrand = await brandService.toggleStatus(brand._id);
       setBrands(
         brands.map((b) => (b._id === updatedBrand._id ? updatedBrand : b)),
       );
@@ -246,16 +237,20 @@ const AllBrands = () => {
       {/* Toast Notification - Make sure this is visible */}
       {toast.show && (
         <div className="fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-lg transition-all transform animate-slide-in">
-          <div className={`flex items-center gap-2 ${
-            toast.type === "success" 
-              ? "bg-green-50 text-green-800 border border-green-200" 
-              : "bg-red-50 text-red-800 border border-red-200"
-          } p-3 rounded-lg`}>
+          <div
+            className={`flex items-center gap-2 ${
+              toast.type === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+            } p-3 rounded-lg`}
+          >
             <div className="flex-1">
               <p className="text-sm font-medium">{toast.message}</p>
             </div>
             <button
-              onClick={() => setToast({ show: false, message: "", type: "success" })}
+              onClick={() =>
+                setToast({ show: false, message: "", type: "success" })
+              }
               className="text-gray-400 hover:text-gray-600"
             >
               <XMarkIcon className="w-4 h-4" />
