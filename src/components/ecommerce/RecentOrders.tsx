@@ -296,15 +296,14 @@ export default function RecentOrders() {
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
             {orders.length === 0 ? (
               <TableRow>
-                {/* Instead of colSpan, use multiple TableCell components */}
                 <TableCell className="py-8 text-center text-gray-500">
                   No orders found
                 </TableCell>
-                <TableCell className="py-8"></TableCell>
-                <TableCell className="py-8"></TableCell>
-                <TableCell className="py-8"></TableCell>
-                <TableCell className="py-8"></TableCell>
-                <TableCell className="py-8"></TableCell>
+                <TableCell className="py-8">{""}</TableCell>
+                <TableCell className="py-8">{""}</TableCell>
+                <TableCell className="py-8">{""}</TableCell>
+                <TableCell className="py-8">{""}</TableCell>
+                <TableCell className="py-8">{""}</TableCell>
               </TableRow>
             ) : (
               orders.map((order) => (
