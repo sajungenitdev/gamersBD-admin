@@ -7,11 +7,7 @@ import {
   GroupIcon,
 } from "../../icons";
 import Badge from "../ui/badge/Badge";
-import {
-  DollarSignIcon,
-  TrendingUpDownIcon,
-  TrendingUpIcon,
-} from "lucide-react";
+import { DollarSignIcon, TrendingUpIcon } from "lucide-react";
 
 interface OrderStats {
   totalOrders: number;
@@ -57,7 +53,7 @@ export default function EcommerceMetrics() {
   const getAuthToken = () => {
     const sessionToken = sessionStorage.getItem("token");
     if (sessionToken) return sessionToken;
-
+    
     try {
       const authUserStr = localStorage.getItem("authUser");
       if (authUserStr) {
@@ -67,7 +63,7 @@ export default function EcommerceMetrics() {
     } catch (error) {
       console.error("Error parsing authUser:", error);
     }
-
+    
     return localStorage.getItem("token");
   };
 
@@ -81,7 +77,7 @@ export default function EcommerceMetrics() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
       if (response.ok) {
         const data = await response.json();
@@ -104,7 +100,7 @@ export default function EcommerceMetrics() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (response.ok) {
@@ -130,7 +126,7 @@ export default function EcommerceMetrics() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (response.ok) {
@@ -156,29 +152,25 @@ export default function EcommerceMetrics() {
   const getPreviousPeriodData = (orders: any[]) => {
     const now = new Date();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const previousMonthStart = new Date(
-      now.getFullYear(),
-      now.getMonth() - 1,
-      1,
-    );
+    const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
     const currentMonthOrders = orders.filter(
-      (order) => new Date(order.createdAt) >= currentMonthStart,
+      (order) => new Date(order.createdAt) >= currentMonthStart
     );
     const previousMonthOrders = orders.filter(
       (order) =>
         new Date(order.createdAt) >= previousMonthStart &&
-        new Date(order.createdAt) <= previousMonthEnd,
+        new Date(order.createdAt) <= previousMonthEnd
     );
 
     const currentRevenue = currentMonthOrders.reduce(
       (sum, order) => sum + (order.total || 0),
-      0,
+      0
     );
     const previousRevenue = previousMonthOrders.reduce(
       (sum, order) => sum + (order.total || 0),
-      0,
+      0
     );
 
     return {
@@ -199,26 +191,22 @@ export default function EcommerceMetrics() {
 
     try {
       setLoading(true);
-
-      // Fetch all data in parallel
+      
       const [totalCustomers, orderStats, allOrders] = await Promise.all([
         fetchUsers(token),
         fetchOrderStats(token),
         fetchAllOrders(token),
       ]);
 
-      // Calculate previous period changes
       const { currentOrders, previousOrders, currentRevenue, previousRevenue } =
         getPreviousPeriodData(allOrders);
 
       const ordersChange = calculateChange(currentOrders, previousOrders);
       const revenueChange = calculateChange(currentRevenue, previousRevenue);
 
-      // Calculate average order value
       const totalOrders = orderStats?.totalOrders || 0;
       const totalRevenue = orderStats?.totalRevenue || 0;
-      const averageOrderValue =
-        totalOrders > 0 ? totalRevenue / totalOrders : 0;
+      const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
       setStats({
         totalCustomers: totalCustomers,
@@ -227,11 +215,10 @@ export default function EcommerceMetrics() {
         averageOrderValue: averageOrderValue,
         pendingOrders: orderStats?.byStatus?.pending || 0,
         deliveredOrders: orderStats?.byStatus?.delivered || 0,
-        customersChange: 0, // You can implement customer growth tracking
+        customersChange: 0,
         ordersChange: ordersChange,
         revenueChange: revenueChange,
-        conversionRate:
-          totalCustomers > 0 ? (totalOrders / totalCustomers) * 100 : 0,
+        conversionRate: totalCustomers > 0 ? (totalOrders / totalCustomers) * 100 : 0,
       });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -278,6 +265,10 @@ export default function EcommerceMetrics() {
     );
   }
 
+  const customersChange = stats?.customersChange ?? 0;
+  const ordersChange = stats?.ordersChange ?? 0;
+  const revenueChange = stats?.revenueChange ?? 0;
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
       {/* Total Customers */}
@@ -295,10 +286,10 @@ export default function EcommerceMetrics() {
               {stats?.totalCustomers?.toLocaleString() || 0}
             </h4>
           </div>
-          {stats?.customersChange !== 0 && (
-            <Badge color={stats?.customersChange > 0 ? "success" : "error"}>
-              {stats?.customersChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
-              {Math.abs(stats?.customersChange || 0).toFixed(1)}%
+          {customersChange !== 0 && (
+            <Badge color={customersChange > 0 ? "success" : "error"}>
+              {customersChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
+              {Math.abs(customersChange).toFixed(1)}%
             </Badge>
           )}
         </div>
@@ -318,9 +309,9 @@ export default function EcommerceMetrics() {
               {stats?.totalOrders?.toLocaleString() || 0}
             </h4>
           </div>
-          <Badge color={stats?.ordersChange > 0 ? "success" : "error"}>
-            {stats?.ordersChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
-            {Math.abs(stats?.ordersChange || 0).toFixed(1)}%
+          <Badge color={ordersChange > 0 ? "success" : "error"}>
+            {ordersChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
+            {Math.abs(ordersChange).toFixed(1)}%
           </Badge>
         </div>
       </div>
@@ -330,13 +321,7 @@ export default function EcommerceMetrics() {
         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
           <DollarSignIcon className="text-gray-800 size-6 dark:text-white/90" />
         </div>
-        <div className="mt-3">
-          <Badge color={stats?.revenueChange > 0 ? "success" : "error"}>
-            {stats?.revenueChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
-            {Math.abs(stats?.revenueChange || 0).toFixed(1)}%
-          </Badge>
-        </div>
-        <div className="flex items-end justify-between mt-2">
+        <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Total Revenue
@@ -345,13 +330,17 @@ export default function EcommerceMetrics() {
               ৳{(stats?.totalRevenue || 0).toLocaleString()}
             </h4>
           </div>
+          <Badge color={revenueChange > 0 ? "success" : "error"}>
+            {revenueChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
+            {Math.abs(revenueChange).toFixed(1)}%
+          </Badge>
         </div>
       </div>
 
       {/* Average Order Value */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <TrendingUpDownIcon className="text-gray-800 size-6 dark:text-white/90" />
+          <TrendingUpIcon className="text-gray-800 size-6 dark:text-white/90" />
         </div>
         <div className="flex items-end justify-between mt-5">
           <div>
