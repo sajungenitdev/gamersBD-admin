@@ -304,7 +304,6 @@ export default function RecentOrders() {
               <TableRow>
                 <TableCell
                   isHeader={false}
-                  colSpan={6} // Change from "6" to 6 (number)
                   className="py-8 text-center text-gray-500"
                 >
                   No orders found
