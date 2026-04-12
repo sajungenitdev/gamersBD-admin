@@ -1,3 +1,5 @@
+"use client";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -7,68 +9,185 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 
-// Define the TypeScript interface for the table rows
-interface Product {
-  id: number; // Unique identifier for each product
-  name: string; // Product name
-  variants: string; // Number of variants (e.g., "1 Variant", "2 Variants")
-  category: string; // Category of the product
-  price: string; // Price of the product (as a string with currency symbol)
-  // status: string; // Status of the product
-  image: string; // URL or path to the product image
-  status: "Delivered" | "Pending" | "Canceled"; // Status of the product
+interface OrderItem {
+  product: {
+    _id: string;
+    name: string;
+    price: number;
+    images?: string[];
+  };
+  quantity: number;
+  platform: string;
+  priceAtTime: number;
 }
 
-// Define the table data using the interface
-const tableData: Product[] = [
-  {
-    id: 1,
-    name: "MacBook Pro 13”",
-    variants: "2 Variants",
-    category: "Laptop",
-    price: "$2399.00",
-    status: "Delivered",
-    image: "/images/product/product-01.jpg", // Replace with actual image URL
-  },
-  {
-    id: 2,
-    name: "Apple Watch Ultra",
-    variants: "1 Variant",
-    category: "Watch",
-    price: "$879.00",
-    status: "Pending",
-    image: "/images/product/product-02.jpg", // Replace with actual image URL
-  },
-  {
-    id: 3,
-    name: "iPhone 15 Pro Max",
-    variants: "2 Variants",
-    category: "SmartPhone",
-    price: "$1869.00",
-    status: "Delivered",
-    image: "/images/product/product-03.jpg", // Replace with actual image URL
-  },
-  {
-    id: 4,
-    name: "iPad Pro 3rd Gen",
-    variants: "2 Variants",
-    category: "Electronics",
-    price: "$1699.00",
-    status: "Canceled",
-    image: "/images/product/product-04.jpg", // Replace with actual image URL
-  },
-  {
-    id: 5,
-    name: "AirPods Pro 2nd Gen",
-    variants: "1 Variant",
-    category: "Accessories",
-    price: "$240.00",
-    status: "Delivered",
-    image: "/images/product/product-05.jpg", // Replace with actual image URL
-  },
-];
+interface Order {
+  _id: string;
+  orderNumber: string;
+  user: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  items: OrderItem[];
+  total: number;
+  status: string;
+  payment: {
+    method: string;
+    status: string;
+  };
+  createdAt: string;
+}
 
 export default function RecentOrders() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Get auth token
+  const getAuthToken = () => {
+    const sessionToken = sessionStorage.getItem("token");
+    if (sessionToken) return sessionToken;
+
+    try {
+      const authUserStr = localStorage.getItem("authUser");
+      if (authUserStr) {
+        const authUser = JSON.parse(authUserStr);
+        if (authUser.token) return authUser.token;
+      }
+    } catch (error) {
+      console.error("Error parsing authUser:", error);
+    }
+
+    return localStorage.getItem("token");
+  };
+
+  // Fetch recent orders
+  const fetchRecentOrders = async () => {
+    const token = getAuthToken();
+    if (!token) {
+      setError("No authentication token found");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(
+        "https://gamersbd-server.onrender.com/api/orders?page=1&limit=10&sort=-createdAt",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (response.status === 401) {
+        setError("Session expired. Please login again.");
+        setLoading(false);
+        return;
+      }
+
+      if (!response.ok) throw new Error("Failed to fetch orders");
+
+      const data = await response.json();
+      if (data.success) {
+        setOrders(data.orders || []);
+      } else {
+        setError(data.message || "Failed to fetch orders");
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      setError("Failed to load recent orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecentOrders();
+  }, []);
+
+  const getStatusBadgeColor = (status: string) => {
+    const statusMap: Record<string, "success" | "warning" | "error" | "info"> =
+      {
+        delivered: "success",
+        pending: "warning",
+        confirmed: "info",
+        processing: "info",
+        shipped: "info",
+        in_transit: "info",
+        out_for_delivery: "info",
+        cancelled: "error",
+        refunded: "error",
+        on_hold: "warning",
+      };
+    return statusMap[status.toLowerCase()] || "info";
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
+
+  if (loading) {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+        <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+              Recent Orders
+            </h3>
+          </div>
+        </div>
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center gap-3 animate-pulse">
+              <div className="h-12 w-12 bg-gray-200 rounded-lg dark:bg-gray-700"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-32 dark:bg-gray-700"></div>
+                <div className="h-3 bg-gray-200 rounded w-24 mt-2 dark:bg-gray-700"></div>
+              </div>
+              <div className="h-4 bg-gray-200 rounded w-20 dark:bg-gray-700"></div>
+              <div className="h-6 bg-gray-200 rounded w-16 dark:bg-gray-700"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
+        <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+              Recent Orders
+            </h3>
+          </div>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-red-500 text-sm">{error}</p>
+          <button
+            onClick={fetchRecentOrders}
+            className="mt-3 px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
       <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
@@ -76,10 +195,16 @@ export default function RecentOrders() {
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             Recent Orders
           </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Last {orders.length} orders
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
+          <button
+            onClick={fetchRecentOrders}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+          >
             <svg
               className="stroke-current fill-white dark:fill-gray-800"
               width="20"
@@ -115,13 +240,14 @@ export default function RecentOrders() {
                 strokeWidth="1.5"
               />
             </svg>
-            Filter
+            Refresh
           </button>
           <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
             See all
           </button>
         </div>
       </div>
+
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -131,19 +257,31 @@ export default function RecentOrders() {
                 isHeader
                 className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Products
+                Image #
               </TableCell>
               <TableCell
                 isHeader
                 className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Category
+                Order #
               </TableCell>
               <TableCell
                 isHeader
                 className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Price
+                Customer
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Items
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Total
               </TableCell>
               <TableCell
                 isHeader
@@ -151,58 +289,127 @@ export default function RecentOrders() {
               >
                 Status
               </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Date
+              </TableCell>
             </TableRow>
           </TableHeader>
 
           {/* Table Body */}
-
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {tableData.map((product) => (
-              <TableRow key={product.id} className="">
-                <TableCell className="py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-[50px] w-[50px] overflow-hidden rounded-md">
-                      <img
-                        src={product.image}
-                        className="h-[50px] w-[50px]"
-                        alt={product.name}
-                      />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {product.name}
-                      </p>
-                      <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                        {product.variants}
-                      </span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {product.price}
-                </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {product.category}
-                </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  <Badge
-                    size="sm"
-                    color={
-                      product.status === "Delivered"
-                        ? "success"
-                        : product.status === "Pending"
-                        ? "warning"
-                        : "error"
-                    }
-                  >
-                    {product.status}
-                  </Badge>
+            {orders.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={"6"}
+                  className="py-8 text-center text-gray-500"
+                >
+                  No orders found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              orders.map((order) => (
+                <TableRow
+                  key={order._id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                >
+                  <TableCell className="py-3">
+                    <div>
+                      <img src="{order.image}"></img>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div>
+                      <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                        {order.orderNumber}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div>
+                      <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                        {order.user?.name}
+                      </p>
+                      <span className="text-gray-500 text-theme-xs dark:text-gray-400">
+                        {order.user?.email}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 text-theme-sm dark:text-gray-400">
+                        {order.items?.length || 0} item(s)
+                      </span>
+                      {order.items && order.items.length > 0 && (
+                        <div className="flex -space-x-2">
+                          {order.items.slice(0, 3).map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300 border-2 border-white dark:border-gray-800"
+                            >
+                              {item.quantity}
+                            </div>
+                          ))}
+                          {order.items.length > 3 && (
+                            <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-200 border-2 border-white dark:border-gray-800">
+                              +{order.items.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <p className="font-semibold text-gray-800 text-theme-sm dark:text-white/90">
+                      ৳{order.total.toLocaleString()}
+                    </p>
+                    <span className="text-gray-500 text-theme-xs dark:text-gray-400 capitalize">
+                      {order.payment?.method?.replace(/_/g, " ")}
+                    </span>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <Badge size="sm" color={getStatusBadgeColor(order.status)}>
+                      {order.status?.replace(/_/g, " ")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-3">
+                    <p className="text-gray-500 text-theme-sm dark:text-gray-400">
+                      {formatDate(order.createdAt)}
+                    </p>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
+
+      {/* Summary Footer */}
+      {orders.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Total Revenue:{" "}
+            <span className="font-semibold text-gray-800 dark:text-white">
+              ৳
+              {orders
+                .reduce((sum, order) => sum + order.total, 0)
+                .toLocaleString()}
+            </span>
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Avg. Order:{" "}
+            <span className="font-semibold text-gray-800 dark:text-white">
+              ৳
+              {(
+                orders.reduce((sum, order) => sum + order.total, 0) /
+                orders.length
+              ).toLocaleString()}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

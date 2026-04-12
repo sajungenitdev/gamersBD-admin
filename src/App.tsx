@@ -30,6 +30,10 @@ import AllBlogs from "./pages/Blogs/AllBlogs";
 import Contacts from "./pages/Contacts/Contacts";
 import Faq from "./pages/Faq/Faq";
 import SiteSettingsPage from "./pages/SiteSettings/SiteSettings";
+import AllOrder from "./pages/Order/AllOrder";
+import AllPendingOrders from "./pages/Order/AllPendingOrders";
+import AllDeliveredOrders from "./pages/Order/AllDeliveredOrders";
+import AllCancelOrders from "./pages/Order/AllCancelOrders";
 
 export default function App() {
   return (
@@ -65,6 +69,11 @@ export default function App() {
             <Route path="/contacts" element={<Contacts />} />
             <Route path="/faq" element={<Faq />} />
             <Route path="/site-settings" element={<SiteSettingsPage />} />
+            <Route path="/all-orders" element={<AllOrder />} />
+            <Route path="/orders/pendings" element={<AllPendingOrders />} />
+            <Route path="/orders/delivered" element={<AllDeliveredOrders />} />
+            <Route path="/orders/cancel" element={<AllCancelOrders />} />
+            <Route path="/orders/track" element={<AllCancelOrders />} />
 
             <Route path="/users" element={<UserManagement />} />
             {/* Others Page */}

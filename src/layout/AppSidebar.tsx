@@ -39,12 +39,13 @@ const navItems: NavItem[] = [
     icon: <ShoppingBagIcon />, // or <TruckIcon />
     path: "/orders",
     subItems: [
-      { name: "All Orders", path: "/orders", pro: false },
-      { name: "Pending Orders", path: "/orders/pending", pro: false },
-      { name: "Processing Orders", path: "/orders/processing", pro: false },
-      { name: "Shipped Orders", path: "/orders/shipped", pro: false },
+      { name: "All Orders", path: "/all-orders", pro: false },
+      { name: "Pending Orders", path: "/orders/pendings", pro: false },
+      // { name: "Processing Orders", path: "/orders/processing", pro: false },
+      // { name: "Shipped Orders", path: "/orders/shipped", pro: false },
       { name: "Delivered Orders", path: "/orders/delivered", pro: false },
-      { name: "Cancelled / Returns", path: "/orders/returns", pro: false },
+      { name: "Cancelled / Returns", path: "/orders/cancel", pro: false },
+      { name: "Track Order", path: "/orders/track", pro: false },
     ],
   },
   {
