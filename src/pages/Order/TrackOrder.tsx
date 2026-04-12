@@ -4,28 +4,21 @@ import {
   Search,
   Package,
   Truck,
-  MapPin,
   CheckCircle,
   Clock,
   XCircle,
   AlertCircle,
   Loader2,
-  Calendar,
   CreditCard,
   User,
-  Mail,
   Phone,
   MapPinIcon,
   ShoppingBag,
   ChevronRight,
-  Home,
-  Building2,
   PhoneCall,
   Mail as MailIcon,
-  DollarSign,
   CalendarDays,
 } from "lucide-react";
-import Link from "next/link";
 
 interface OrderItem {
   product: {
@@ -85,6 +78,7 @@ interface Order {
 
 const TrackOrder = () => {
   const [orderNumber, setOrderNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,8 +104,18 @@ const TrackOrder = () => {
 
   const trackOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate inputs
     if (!orderNumber.trim()) {
       setError("Please enter an order number");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Please enter your email address");
+      return;
+    }
+    if (!email.includes("@") || !email.includes(".")) {
+      setError("Please enter a valid email address");
       return;
     }
 
@@ -130,7 +134,7 @@ const TrackOrder = () => {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      // Fetch all orders and find by order number
+      // Fetch all orders and find by order number and email
       const response = await fetch(
         "https://gamersbd-server.onrender.com/api/orders?page=1&limit=100",
         { headers },
@@ -147,13 +151,17 @@ const TrackOrder = () => {
       const data = await response.json();
       if (data.success) {
         const foundOrder = data.orders.find(
-          (order: Order) => order.orderNumber === orderNumber.toUpperCase(),
+          (order: Order) =>
+            order.orderNumber === orderNumber.toUpperCase() &&
+            order.user?.email?.toLowerCase() === email.toLowerCase(),
         );
 
         if (foundOrder) {
           setOrder(foundOrder);
         } else {
-          setError("Order not found. Please check your order number.");
+          setError(
+            "Order not found. Please check your order number and email.",
+          );
         }
       } else {
         setError(data.message || "Failed to fetch order");
@@ -179,8 +187,8 @@ const TrackOrder = () => {
       },
       confirmed: {
         icon: CheckCircle,
-        color: "text-blue-600",
-        bgColor: "bg-blue-100",
+        color: "text-orange-600",
+        bgColor: "bg-orange-100",
         label: "Order Confirmed",
       },
       processing: {
@@ -282,47 +290,80 @@ const TrackOrder = () => {
     });
   };
 
+  const steps = [
+    "pending",
+    "confirmed",
+    "processing",
+    "shipped",
+    "in_transit",
+    "out_for_delivery",
+    "delivered",
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen dark:bg-gray-900 from-orange-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Header with Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
+          <div className="inline-block">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Package className="w-8 h-8 text-blue-600" />
-              <span className="text-2xl font-bold text-gray-900">GamersBD</span>
+              <Package className="w-8 h-8 text-orange-600" />
+              <span className="text-2xl font-bold text-white">GamersBD</span>
             </div>
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">
             Track Your Order
           </h1>
           <p className="text-gray-600">
-            Enter your order number to get real-time delivery status
+            Enter your order number and email to get real-time delivery status
           </p>
         </div>
 
         {/* Search Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-          <form
-            onSubmit={trackOrder}
-            className="flex flex-col sm:flex-row gap-4"
-          >
-            <div className="flex-1">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8">
+          <form onSubmit={trackOrder} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-white mb-2">
+                Order Number <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
                   value={orderNumber}
                   onChange={(e) => setOrderNumber(e.target.value)}
-                  placeholder="Enter your order number (e.g., ORD-241211-0001)"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="e.g., ORD-241211-0001"
+                  className="w-full pl-10 text-white pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Enter your order number (e.g., ORD-241211-0001)
+              </p>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white mb-2">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <MailIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="john@example.com"
+                  className="w-full pl-10 pr-4 text-white py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Enter the email address used when placing the order
+              </p>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25"
+              className="w-full px-8 py-3 bg-gradient-to-r from-orange-600 to-indigo-600 text-white rounded-xl hover:from-orange-700 hover:to-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -332,6 +373,14 @@ const TrackOrder = () => {
               Track Order
             </button>
           </form>
+
+          <div className="mt-4 p-3 bg-orange-50 rounded-lg">
+            <p className="text-sm text-orange-700 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              You can also track your order without an account using the order
+              number and email.
+            </p>
+          </div>
 
           {error && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm flex items-center gap-2">
@@ -345,12 +394,12 @@ const TrackOrder = () => {
         {order && (
           <div className="space-y-6">
             {/* Order Header Card */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 text-white">
+            <div className="bg-gradient-to-r from-orange-600 to-indigo-600 rounded-2xl shadow-xl p-6 text-white">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <p className="text-blue-100 text-sm">Order Number</p>
+                  <p className="text-orange-100 text-sm">Order Number</p>
                   <h2 className="text-2xl font-bold">{order.orderNumber}</h2>
-                  <p className="text-blue-100 text-sm mt-1">
+                  <p className="text-orange-100 text-sm mt-1">
                     Placed on {formatDate(order.createdAt)}
                   </p>
                 </div>
@@ -378,20 +427,12 @@ const TrackOrder = () => {
             {/* Delivery Progress Timeline */}
             <div className="bg-white rounded-2xl shadow-xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                <Truck className="w-5 h-5 text-blue-600" />
+                <Truck className="w-5 h-5 text-orange-600" />
                 Delivery Progress
               </h3>
               <div className="relative">
                 <div className="flex justify-between mb-2">
-                  {[
-                    "pending",
-                    "confirmed",
-                    "processing",
-                    "shipped",
-                    "in_transit",
-                    "out_for_delivery",
-                    "delivered",
-                  ].map((step, idx) => {
+                  {steps.map((step, idx) => {
                     const stepStatus = getStepStatus(order.status, step);
                     const isCompleted = stepStatus === "completed";
                     const stepLabels = [
@@ -414,7 +455,7 @@ const TrackOrder = () => {
                             isCompleted
                               ? "bg-green-500 text-white"
                               : order.status === step
-                                ? "bg-blue-500 text-white ring-4 ring-blue-200"
+                                ? "bg-orange-500 text-white ring-4 ring-orange-200"
                                 : "bg-gray-200 text-gray-400"
                           }`}
                         >
@@ -464,7 +505,7 @@ const TrackOrder = () => {
               {/* Shipping Address */}
               <div className="bg-white rounded-2xl shadow-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <MapPinIcon className="w-5 h-5 text-blue-600" />
+                  <MapPinIcon className="w-5 h-5 text-orange-600" />
                   Shipping Address
                 </h3>
                 <div className="space-y-1 text-gray-600">
@@ -491,7 +532,7 @@ const TrackOrder = () => {
               {/* Tracking Information */}
               <div className="bg-white rounded-2xl shadow-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Truck className="w-5 h-5 text-blue-600" />
+                  <Truck className="w-5 h-5 text-orange-600" />
                   Tracking Information
                 </h3>
                 {order.trackingNumber ? (
@@ -511,7 +552,7 @@ const TrackOrder = () => {
                         href={order.trackingUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                        className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium"
                       >
                         Track Package <ChevronRight className="w-4 h-4" />
                       </a>
@@ -530,7 +571,7 @@ const TrackOrder = () => {
               {/* Customer Information */}
               <div className="bg-white rounded-2xl shadow-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5 text-blue-600" />
+                  <User className="w-5 h-5 text-orange-600" />
                   Customer Information
                 </h3>
                 <div className="space-y-2">
@@ -554,7 +595,7 @@ const TrackOrder = () => {
               {/* Payment Information */}
               <div className="bg-white rounded-2xl shadow-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-blue-600" />
+                  <CreditCard className="w-5 h-5 text-orange-600" />
                   Payment Information
                 </h3>
                 <div className="space-y-2">
@@ -594,7 +635,7 @@ const TrackOrder = () => {
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               <div className="p-6 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-blue-600" />
+                  <ShoppingBag className="w-5 h-5 text-orange-600" />
                   Order Items ({order.items.length})
                 </h3>
               </div>
@@ -667,7 +708,7 @@ const TrackOrder = () => {
                     )}
                     <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
                       <span>Total:</span>
-                      <span className="text-blue-600">
+                      <span className="text-orange-600">
                         ৳{order.total.toLocaleString()}
                       </span>
                     </div>
@@ -680,17 +721,18 @@ const TrackOrder = () => {
             {order.statusHistory && order.statusHistory.length > 0 && (
               <div className="bg-white rounded-2xl shadow-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-600" />
+                  <Clock className="w-5 h-5 text-orange-600" />
                   Order Timeline
                 </h3>
                 <div className="space-y-4">
                   {order.statusHistory.map((history, idx) => (
                     <div key={idx} className="flex gap-3">
                       <div className="relative">
-                        <div className="w-3 h-3 mt-1 rounded-full bg-blue-500"></div>
-                        {idx < order.statusHistory.length - 1 && (
-                          <div className="absolute top-4 left-1 w-0.5 h-full bg-gray-300"></div>
-                        )}
+                        <div className="w-3 h-3 mt-1 rounded-full bg-orange-500"></div>
+                        {order.statusHistory &&
+                          idx < order.statusHistory.length - 1 && (
+                            <div className="absolute top-4 left-1 w-0.5 h-full bg-gray-300"></div>
+                          )}
                       </div>
                       <div className="flex-1 pb-4">
                         <p className="font-medium text-gray-900 capitalize">
@@ -708,7 +750,7 @@ const TrackOrder = () => {
             )}
 
             {/* Help Section */}
-            <div className="bg-blue-50 rounded-2xl p-6 text-center">
+            <div className="bg-orange-50 rounded-2xl p-6 text-center">
               <h4 className="font-semibold text-gray-900 mb-2">Need Help?</h4>
               <p className="text-sm text-gray-600 mb-4">
                 If you have any questions about your order, our support team is
@@ -717,7 +759,7 @@ const TrackOrder = () => {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <a
                   href="/contact"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-gray-50 transition border border-blue-200"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-orange-600 rounded-lg hover:bg-gray-50 transition border border-orange-200"
                 >
                   <MailIcon className="w-4 h-4" />
                   Contact Support
@@ -744,8 +786,9 @@ const TrackOrder = () => {
               Order Not Found
             </h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              We couldn't find an order with the number "{orderNumber}". Please
-              check the order number and try again.
+              We couldn't find an order with the number "{orderNumber}" and
+              email "{email}". Please check your order number and email and try
+              again.
             </p>
           </div>
         )}
