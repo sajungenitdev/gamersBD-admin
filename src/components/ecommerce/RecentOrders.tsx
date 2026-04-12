@@ -257,12 +257,6 @@ export default function RecentOrders() {
                 isHeader
                 className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Image #
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
                 Order #
               </TableCell>
               <TableCell
@@ -302,12 +296,15 @@ export default function RecentOrders() {
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
             {orders.length === 0 ? (
               <TableRow>
-                <TableCell
-                  isHeader={false}
-                  className="py-8 text-center text-gray-500"
-                >
+                {/* Instead of colSpan, use multiple TableCell components */}
+                <TableCell className="py-8 text-center text-gray-500">
                   No orders found
                 </TableCell>
+                <TableCell className="py-8"></TableCell>
+                <TableCell className="py-8"></TableCell>
+                <TableCell className="py-8"></TableCell>
+                <TableCell className="py-8"></TableCell>
+                <TableCell className="py-8"></TableCell>
               </TableRow>
             ) : (
               orders.map((order) => (
@@ -315,11 +312,6 @@ export default function RecentOrders() {
                   key={order._id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                 >
-                  <TableCell className="py-3">
-                    <div>
-                      <img src="{order.image}"></img>
-                    </div>
-                  </TableCell>
                   <TableCell className="py-3">
                     <div>
                       <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
