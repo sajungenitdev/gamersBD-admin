@@ -1226,7 +1226,7 @@ export default function EditProduct() {
                           onChange={handleNumberChange}
                           placeholder="0"
                           min="0"
-                          step="0.01"
+                          step={0.01}
                           required
                         />
                       </div>
@@ -1302,7 +1302,7 @@ export default function EditProduct() {
                             onChange={handleNumberChange}
                             placeholder="0"
                             min="0"
-                            step="0.01"
+                            step={0.01}
                           />
                         </div>
                         <div>
@@ -1316,7 +1316,7 @@ export default function EditProduct() {
                             placeholder="0"
                             min="0"
                             max="100"
-                            step="1"
+                            step={1}
                           />
                         </div>
                         <div>
@@ -1783,7 +1783,7 @@ export default function EditProduct() {
                             value={formData.dimensions.length}
                             onChange={handleNumberChange}
                             placeholder="L"
-                            step="0.1"
+                            step={0.1}
                           />
                           <Input
                             type="number"
@@ -1791,7 +1791,7 @@ export default function EditProduct() {
                             value={formData.dimensions.width}
                             onChange={handleNumberChange}
                             placeholder="W"
-                            step="0.1"
+                            step={0.1}
                           />
                           <Input
                             type="number"
@@ -1799,7 +1799,7 @@ export default function EditProduct() {
                             value={formData.dimensions.height}
                             onChange={handleNumberChange}
                             placeholder="H"
-                            step="0.1"
+                            step={0.1}
                           />
                         </div>
                       </div>
@@ -1825,7 +1825,7 @@ export default function EditProduct() {
                           value={formData.weight}
                           onChange={handleNumberChange}
                           placeholder="Weight in grams"
-                          step="0.1"
+                          step={0.1}
                         />
                       </div>
                     </div>
