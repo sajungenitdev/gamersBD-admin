@@ -53,7 +53,7 @@ export default function EcommerceMetrics() {
   const getAuthToken = () => {
     const sessionToken = sessionStorage.getItem("token");
     if (sessionToken) return sessionToken;
-    
+
     try {
       const authUserStr = localStorage.getItem("authUser");
       if (authUserStr) {
@@ -63,7 +63,7 @@ export default function EcommerceMetrics() {
     } catch (error) {
       console.error("Error parsing authUser:", error);
     }
-    
+
     return localStorage.getItem("token");
   };
 
@@ -77,7 +77,7 @@ export default function EcommerceMetrics() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       if (response.ok) {
         const data = await response.json();
@@ -100,7 +100,7 @@ export default function EcommerceMetrics() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.ok) {
@@ -126,7 +126,7 @@ export default function EcommerceMetrics() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.ok) {
@@ -152,25 +152,29 @@ export default function EcommerceMetrics() {
   const getPreviousPeriodData = (orders: any[]) => {
     const now = new Date();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const previousMonthStart = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      1,
+    );
     const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
     const currentMonthOrders = orders.filter(
-      (order) => new Date(order.createdAt) >= currentMonthStart
+      (order) => new Date(order.createdAt) >= currentMonthStart,
     );
     const previousMonthOrders = orders.filter(
       (order) =>
         new Date(order.createdAt) >= previousMonthStart &&
-        new Date(order.createdAt) <= previousMonthEnd
+        new Date(order.createdAt) <= previousMonthEnd,
     );
 
     const currentRevenue = currentMonthOrders.reduce(
       (sum, order) => sum + (order.total || 0),
-      0
+      0,
     );
     const previousRevenue = previousMonthOrders.reduce(
       (sum, order) => sum + (order.total || 0),
-      0
+      0,
     );
 
     return {
@@ -191,7 +195,7 @@ export default function EcommerceMetrics() {
 
     try {
       setLoading(true);
-      
+
       const [totalCustomers, orderStats, allOrders] = await Promise.all([
         fetchUsers(token),
         fetchOrderStats(token),
@@ -206,7 +210,8 @@ export default function EcommerceMetrics() {
 
       const totalOrders = orderStats?.totalOrders || 0;
       const totalRevenue = orderStats?.totalRevenue || 0;
-      const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+      const averageOrderValue =
+        totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
       setStats({
         totalCustomers: totalCustomers,
@@ -218,7 +223,8 @@ export default function EcommerceMetrics() {
         customersChange: 0,
         ordersChange: ordersChange,
         revenueChange: revenueChange,
-        conversionRate: totalCustomers > 0 ? (totalOrders / totalCustomers) * 100 : 0,
+        conversionRate:
+          totalCustomers > 0 ? (totalOrders / totalCustomers) * 100 : 0,
       });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -273,11 +279,22 @@ export default function EcommerceMetrics() {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
       {/* Total Customers */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />
+        <div className="flex items-end justify-between">
+          <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+            <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />
+          </div>
+
+          <div>
+            {customersChange !== 0 && (
+              <Badge color={customersChange > 0 ? "success" : "error"}>
+                {customersChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
+                {Math.abs(customersChange).toFixed(1)}%
+              </Badge>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-end justify-between mt-5">
+        <div className="flex items-end justify-between mt-5 flex-column">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Total Customers
@@ -286,21 +303,23 @@ export default function EcommerceMetrics() {
               {stats?.totalCustomers?.toLocaleString() || 0}
             </h4>
           </div>
-          {customersChange !== 0 && (
-            <Badge color={customersChange > 0 ? "success" : "error"}>
-              {customersChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
-              {Math.abs(customersChange).toFixed(1)}%
-            </Badge>
-          )}
         </div>
       </div>
 
       {/* Total Orders */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
+        <div className="flex justify-between items-center">
+          <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+            <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
+          </div>
+          <div>
+            <Badge color={ordersChange > 0 ? "success" : "error"}>
+              {ordersChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
+              {Math.abs(ordersChange).toFixed(1)}%
+            </Badge>
+          </div>
         </div>
-        <div className="flex items-end justify-between mt-5">
+        <div className="mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Total Orders
@@ -309,20 +328,24 @@ export default function EcommerceMetrics() {
               {stats?.totalOrders?.toLocaleString() || 0}
             </h4>
           </div>
-          <Badge color={ordersChange > 0 ? "success" : "error"}>
-            {ordersChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
-            {Math.abs(ordersChange).toFixed(1)}%
-          </Badge>
         </div>
       </div>
 
       {/* Total Revenue */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <DollarSignIcon className="text-gray-800 size-6 dark:text-white/90" />
-        </div>
-        <div className="flex items-end justify-between mt-5">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+            <DollarSignIcon className="text-gray-800 size-6 dark:text-white/90" />
+          </div>
           <div>
+            <Badge color={revenueChange > 0 ? "success" : "error"}>
+              {revenueChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
+              {Math.abs(revenueChange).toFixed(1)}%
+            </Badge>
+          </div>
+        </div>
+        <div className="mt-5">
+          <div className="mb-3">
             <span className="text-sm text-gray-500 dark:text-gray-400">
               Total Revenue
             </span>
@@ -330,10 +353,6 @@ export default function EcommerceMetrics() {
               ৳{(stats?.totalRevenue || 0).toLocaleString()}
             </h4>
           </div>
-          <Badge color={revenueChange > 0 ? "success" : "error"}>
-            {revenueChange > 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
-            {Math.abs(revenueChange).toFixed(1)}%
-          </Badge>
         </div>
       </div>
 

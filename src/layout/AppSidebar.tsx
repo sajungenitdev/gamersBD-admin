@@ -30,7 +30,7 @@ const navItems: NavItem[] = [
       { name: "Brands", path: "/all-brands", pro: false },
       { name: "All Products", path: "/all-products", pro: false },
       { name: "Add Product", path: "/products/add", pro: false },
-      { name: "Inventory / Stock", path: "/inventory", pro: false },
+      // { name: "Inventory / Stock", path: "/inventory", pro: false },
       // { name: "Product Reviews", path: "/reviews", pro: false },
     ],
   },
@@ -55,7 +55,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "All Users", path: "/users", pro: false },
       { name: "My Profile", path: "/profile", pro: false },
-      { name: "User Roles", path: "/user-roles", pro: true },
+      // { name: "User Roles", path: "/user-roles", pro: true },
     ],
   },
   // {
@@ -76,7 +76,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Blog Posts", path: "/all-blogs", pro: false },
       { name: "FAQ", path: "/faq", pro: false },
-      { name: "About Us", path: "/pages", pro: false },
+      { name: "About Us (Comming Soon)", path: "#", pro: false },
       { name: "Contacts Messages", path: "/contacts", pro: false },
     ],
   },

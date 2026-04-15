@@ -367,12 +367,12 @@ export default function MonthlySalesChart() {
               View Orders Count
             </DropdownItem>
             <hr className="my-1 border-gray-200 dark:border-gray-700" />
-            <DropdownItem
+            {/* <DropdownItem
               onItemClick={closeDropdown}
               className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               Export Data
-            </DropdownItem>
+            </DropdownItem> */}
           </Dropdown>
         </div>
       </div>
@@ -407,7 +407,7 @@ export default function MonthlySalesChart() {
       </div>
 
       {/* Legend/Info */}
-      <div className="mt-3 pb-4 text-center">
+      <div className="mt-8 pb-4 text-center">
         <p className="text-xs text-gray-400 dark:text-gray-500">
           {chartType === "revenue" 
             ? "Monthly revenue in Bangladeshi Taka (BDT)"

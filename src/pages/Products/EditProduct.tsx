@@ -177,7 +177,6 @@ export default function EditProduct() {
   const [subCategories, setSubCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("basic");
 
   // Form data state
@@ -336,10 +335,12 @@ export default function EditProduct() {
         setCategories(data.data);
         const parents = data.data.filter((cat) => cat.level === 0);
         setParentCategories(parents);
+        return data.data;
       }
     } catch (err) {
       console.error("Error fetching categories:", err);
     }
+    return [];
   };
 
   // Fetch brands from API
@@ -385,13 +386,14 @@ export default function EditProduct() {
     }
   }, [token]);
 
-  // Fetch product data
-  // Fetch product data
+  // Fetch product data - FIXED VERSION
   const fetchProduct = async () => {
-    if (!token || !id || categories.length === 0) return;
+    if (!token || !id) return;
 
     try {
       setFetchLoading(true);
+
+      // Fetch product data
       const response = await fetch(
         `https://gamersbd-server.onrender.com/api/products/${id}`,
         {
@@ -407,54 +409,76 @@ export default function EditProduct() {
       if (data.success) {
         const product = data.data;
 
-        // Determine parent category and subcategory
+        // Ensure categories are loaded
+        let currentCategories = categories;
+        if (currentCategories.length === 0) {
+          currentCategories = await fetchCategories();
+        }
+
+        // Get the category ID from product (handle both object and string)
+        let productCategoryId = "";
+        if (typeof product.category === "object" && product.category !== null) {
+          productCategoryId =
+            (product.category as any)._id || (product.category as any).id;
+        } else if (typeof product.category === "string") {
+          productCategoryId = product.category;
+        }
+
+        console.log("Product Category ID:", productCategoryId);
+        console.log("Available Categories:", currentCategories);
+
+        // Find the category object
+        const categoryObj = currentCategories.find(
+          (c) => c._id === productCategoryId,
+        );
+
         let parentCategory = "";
         let subCategory = "";
 
-        const categoryObj = categories.find((c) => c._id === product.category);
         if (categoryObj) {
           if (categoryObj.level === 0) {
-            parentCategory = product.category;
+            // It's a parent category
+            parentCategory = categoryObj._id;
             subCategory = "";
           } else if (categoryObj.level === 1 && categoryObj.parent) {
+            // It's a subcategory
             parentCategory = categoryObj.parent._id;
-            subCategory = product.category;
+            subCategory = categoryObj._id;
           }
+        } else {
+          // If category not found in list, try to use as is
+          parentCategory = productCategoryId;
         }
 
-        // Handle brand - check if it's an ID or an object
+        console.log("Setting Parent Category:", parentCategory);
+        console.log("Setting Sub Category:", subCategory);
+
+        // Load subcategories for the parent category
+        if (parentCategory) {
+          const children = currentCategories.filter(
+            (cat) => cat.parent && cat.parent._id === parentCategory,
+          );
+          setSubCategories(children);
+        }
+
+        // Handle brand - extract ID from object if needed
         let brandId = "";
-
         if (product.brand) {
-          // Check if brand is an object (populated)
           if (typeof product.brand === "object" && product.brand !== null) {
-            // Type assertion for populated brand
-            const populatedBrand = product.brand as {
-              _id: string;
-              name: string;
-            };
-            brandId = populatedBrand._id;
-          }
-          // Check if brand is a string ID
-          else if (typeof product.brand === "string") {
-            // Check if it's a valid MongoDB ID (24 character hex)
-            const isMongoId = /^[0-9a-fA-F]{24}$/.test(product.brand);
-
-            if (isMongoId) {
-              // It's an ID
-              brandId = product.brand;
-            } else {
-              // It's a brand name, try to find matching brand
-              const foundBrand = brands.find(
-                (b) =>
-                  b.name.toLowerCase() ===
-                  (product.brand as string).toLowerCase(),
-              );
-              brandId = foundBrand?._id || "";
-            }
+            brandId =
+              (product.brand as any)._id || (product.brand as any).id || "";
+          } else if (typeof product.brand === "string") {
+            brandId = product.brand;
           }
         }
 
+        // Handle dates
+        const formatDate = (date: any) => {
+          if (!date) return "";
+          return date.split("T")[0];
+        };
+
+        // Set form data with all values
         setFormData({
           name: product.name || "",
           description: product.description || "",
@@ -464,12 +488,12 @@ export default function EditProduct() {
           currency: product.currency || "BDT",
           category: parentCategory,
           subCategory: subCategory,
-          brand: brandId, // Use the resolved brand ID
+          brand: brandId,
           mainImage: product.mainImage || "",
           images: product.images || [],
           stock: Number(product.stock) || 0,
           availability: product.availability || "in-stock",
-          type: (product.type as any) || "game",
+          type: product.type || "game",
           platform: product.platform || [],
           genre: product.genre || [],
           ageRange: {
@@ -481,7 +505,7 @@ export default function EditProduct() {
             max: Number(product.players?.max) || 1,
           },
           publisher: product.publisher || "",
-          releaseDate: product.releaseDate?.split("T")[0] || "",
+          releaseDate: formatDate(product.releaseDate),
           features: product.features || [],
           specifications: product.specifications || {},
           weight: Number(product.weight) || 0,
@@ -489,18 +513,22 @@ export default function EditProduct() {
             length: Number(product.dimensions?.length) || 0,
             width: Number(product.dimensions?.width) || 0,
             height: Number(product.dimensions?.height) || 0,
-            unit: (product.dimensions?.unit as any) || "cm",
+            unit: product.dimensions?.unit || "cm",
           },
-          offerType: (product.offerType as any) || "none",
-          offerBadge: (product.offerBadge as any) || "none",
-          offerBadgeColor: (product.offerBadgeColor as any) || "red",
+          offerType: product.offerType || "none",
+          offerBadge: product.offerBadge || "none",
+          offerBadgeColor: product.offerBadgeColor || "red",
           offerPriority: Number(product.offerPriority) || 5,
           isOnSale: product.isOnSale || false,
           discountPercentage: Number(product.discountPercentage) || 0,
           flashSaleQuantity: Number(product.flashSaleQuantity) || 0,
           flashSaleSold: Number(product.flashSaleSold) || 0,
-          saleStartDate: product.saleStartDate?.split("T")[0] || "",
-          saleEndDate: product.saleEndDate?.split("T")[0] || "",
+          saleStartDate: product.saleStartDate
+            ? formatDate(product.saleStartDate)
+            : "",
+          saleEndDate: product.saleEndDate
+            ? formatDate(product.saleEndDate)
+            : "",
           isFeatured: product.isFeatured || false,
           tags: product.tags || [],
           metaTitle: product.metaTitle || "",
@@ -513,16 +541,32 @@ export default function EditProduct() {
       }
     } catch (err) {
       console.error("Error fetching product:", err);
+      setError("Failed to load product data");
     } finally {
       setFetchLoading(false);
     }
   };
 
+  // Load product when categories are ready
   useEffect(() => {
-    if (token && id && categories.length > 0) {
-      fetchProduct();
+    if (token && id) {
+      const loadData = async () => {
+        if (categories.length > 0) {
+          await fetchProduct();
+        } else {
+          // Wait for categories to load
+          const interval = setInterval(async () => {
+            if (categories.length > 0) {
+              clearInterval(interval);
+              await fetchProduct();
+            }
+          }, 100);
+          return () => clearInterval(interval);
+        }
+      };
+      loadData();
     }
-  }, [token, id, categories]);
+  }, [token, id, categories.length]);
 
   // Update subcategories when main category changes
   useEffect(() => {
@@ -572,16 +616,6 @@ export default function EditProduct() {
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));
-
-      if (name === "isOnSale" && !checked) {
-        setFormData((prev) => ({
-          ...prev,
-          discountPrice: 0,
-          discountPercentage: 0,
-          saleStartDate: "",
-          saleEndDate: "",
-        }));
-      }
     } else if (name.includes(".")) {
       const [parent, child] = name.split(".");
       setFormData((prev) => ({
@@ -594,13 +628,12 @@ export default function EditProduct() {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-
-    setValidationError(null);
   };
 
-  // Handle number inputs with proper nested object support
+  // Handle number inputs
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const numValue = value === "" ? 0 : parseFloat(value);
 
     if (name.includes(".")) {
       const [parent, child] = name.split(".");
@@ -608,39 +641,11 @@ export default function EditProduct() {
         ...prev,
         [parent]: {
           ...(prev[parent as keyof ProductFormData] as Record<string, any>),
-          [child]: parseFloat(value) || 0,
+          [child]: numValue,
         },
       }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: parseFloat(value) || 0 }));
-    }
-
-    if (name === "discountPrice" || name === "price") {
-      validateDiscountPrice(
-        name === "price" ? parseFloat(value) || 0 : formData.price,
-        name === "discountPrice"
-          ? parseFloat(value) || 0
-          : formData.discountPrice,
-        formData.isOnSale,
-      );
-    }
-  };
-
-  // Validate discount price
-  const validateDiscountPrice = (
-    price: number,
-    discountPrice: number,
-    isOnSale: boolean,
-  ) => {
-    if (isOnSale && discountPrice >= price && discountPrice > 0) {
-      setValidationError("Discount price must be less than regular price");
-      return false;
-    } else if (isOnSale && discountPrice <= 0) {
-      setValidationError("Discount price must be greater than 0");
-      return false;
-    } else {
-      setValidationError(null);
-      return true;
+      setFormData((prev) => ({ ...prev, [name]: numValue }));
     }
   };
 
@@ -689,28 +694,43 @@ export default function EditProduct() {
     navigate("/all-products");
   };
 
-  // Handle form submission
+  // Handle form submission - FIXED: Removed discount validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (formData.isOnSale) {
-      if (
-        !validateDiscountPrice(formData.price, formData.discountPrice, true)
-      ) {
-        setActiveTab("pricing");
-        return;
-      }
-    }
 
     setLoading(true);
     setError(null);
 
     try {
+      // Prepare data for submission
       const productData = {
         ...formData,
         category: formData.subCategory || formData.category,
         subCategory: undefined,
         brandName: undefined,
+        // Ensure numeric values are numbers
+        price: Number(formData.price),
+        discountPrice: Number(formData.discountPrice),
+        stock: Number(formData.stock),
+        weight: Number(formData.weight),
+        discountPercentage: Number(formData.discountPercentage),
+        offerPriority: Number(formData.offerPriority),
+        flashSaleQuantity: Number(formData.flashSaleQuantity),
+        flashSaleSold: Number(formData.flashSaleSold),
+        ageRange: {
+          min: Number(formData.ageRange.min),
+          max: Number(formData.ageRange.max),
+        },
+        players: {
+          min: Number(formData.players.min),
+          max: Number(formData.players.max),
+        },
+        dimensions: {
+          length: Number(formData.dimensions.length),
+          width: Number(formData.dimensions.width),
+          height: Number(formData.dimensions.height),
+          unit: formData.dimensions.unit,
+        },
       };
 
       const response = await fetch(
@@ -1071,7 +1091,6 @@ export default function EditProduct() {
                       <Label htmlFor="category">
                         Parent Category <span className="text-red-500">*</span>
                       </Label>
-
                       <select
                         id="category"
                         name="category"
@@ -1134,10 +1153,6 @@ export default function EditProduct() {
                         </p>
                       </div>
                     )}
-                    <small className="text-gray-500 dark:text-gray-400">
-                      You need to select a parent category & subcategory When
-                      edit the product.
-                    </small>
                   </div>,
                   true,
                 )}
@@ -1186,16 +1201,13 @@ export default function EditProduct() {
                         </span>
                       </div>
                     )}
-                    <small className="text-gray-500 dark:text-gray-400">
-                      You need to select a Brand when edit the product.
-                    </small>
                   </div>,
                   true,
                 )}
               </>
             )}
 
-            {/* Pricing Tab */}
+            {/* Pricing Tab - FIXED: Removed discount validation */}
             {activeTab === "pricing" && (
               <>
                 {renderSection(
@@ -1214,7 +1226,7 @@ export default function EditProduct() {
                           onChange={handleNumberChange}
                           placeholder="0"
                           min="0"
-                          step={0.01}
+                          step="0.01"
                           required
                         />
                       </div>
@@ -1290,14 +1302,8 @@ export default function EditProduct() {
                             onChange={handleNumberChange}
                             placeholder="0"
                             min="0"
-                            max={String(formData.price - 1)}
-                            step={0.01}
+                            step="0.01"
                           />
-                          {validationError && (
-                            <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                              {validationError}
-                            </p>
-                          )}
                         </div>
                         <div>
                           <Label htmlFor="discountPercentage">Discount %</Label>
@@ -1310,13 +1316,13 @@ export default function EditProduct() {
                             placeholder="0"
                             min="0"
                             max="100"
-                            step={1}
+                            step="1"
                           />
                         </div>
                         <div>
                           <Label htmlFor="saleStartDate">Sale Start</Label>
                           <Input
-                            type="datetime-local"
+                            type="date"
                             id="saleStartDate"
                             name="saleStartDate"
                             value={formData.saleStartDate}
@@ -1326,7 +1332,7 @@ export default function EditProduct() {
                         <div>
                           <Label htmlFor="saleEndDate">Sale End</Label>
                           <Input
-                            type="datetime-local"
+                            type="date"
                             id="saleEndDate"
                             name="saleEndDate"
                             value={formData.saleEndDate}
@@ -1777,7 +1783,7 @@ export default function EditProduct() {
                             value={formData.dimensions.length}
                             onChange={handleNumberChange}
                             placeholder="L"
-                            step={0.1}
+                            step="0.1"
                           />
                           <Input
                             type="number"
@@ -1785,7 +1791,7 @@ export default function EditProduct() {
                             value={formData.dimensions.width}
                             onChange={handleNumberChange}
                             placeholder="W"
-                            step={0.1}
+                            step="0.1"
                           />
                           <Input
                             type="number"
@@ -1793,7 +1799,7 @@ export default function EditProduct() {
                             value={formData.dimensions.height}
                             onChange={handleNumberChange}
                             placeholder="H"
-                            step={0.1}
+                            step="0.1"
                           />
                         </div>
                       </div>
@@ -1819,7 +1825,7 @@ export default function EditProduct() {
                           value={formData.weight}
                           onChange={handleNumberChange}
                           placeholder="Weight in grams"
-                          step={0.1}
+                          step="0.1"
                         />
                       </div>
                     </div>

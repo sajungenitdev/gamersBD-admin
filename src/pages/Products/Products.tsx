@@ -364,70 +364,27 @@ export default function Products() {
 
         {/* Filters and Search Bar */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex flex-col gap-4">
-            {/* Search */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="relative flex-1">
+          {/* Filter Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 col-span-3">
+              <div className="relative flex-[2]">
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search products by name, description, or SKU..."
+                  placeholder="Search all products by name, description, or SKU..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full pl-10 pr-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
               <div>
                 <Link
                   to="/products/add"
-                  className="flex items-center justify-center p-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
+                  className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-blue-500 hover:bg-blue-600 whitespace-nowrap"
                 >
-                  <DocumentPlusIcon className="w-4 h-4 mr-2" /> Add Products
+                  <DocumentPlusIcon className="w-4 h-4 mr-1" /> Add Product
                 </Link>
               </div>
-            </div>
-
-            {/* Filter Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Platform Filter */}
-              <select
-                value={platformFilter}
-                onChange={(e) => setPlatformFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="all">All Platforms</option>
-                {allPlatforms.map((platform) => (
-                  <option key={platform} value={platform}>
-                    {platform}
-                  </option>
-                ))}
-              </select>
-
-              {/* Type Filter */}
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="all">All Types</option>
-                {allTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-
-              {/* Availability Filter */}
-              <select
-                value={availabilityFilter}
-                onChange={(e) => setAvailabilityFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="all">All Availability</option>
-                <option value="in-stock">In Stock</option>
-                <option value="out-of-stock">Out of Stock</option>
-                <option value="pre-order">Pre-Order</option>
-              </select>
             </div>
           </div>
         </div>
@@ -438,6 +395,9 @@ export default function Products() {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-900/50 border-y border-gray-200 dark:border-gray-700">
                 <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Sl
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Product
                   </th>
@@ -487,11 +447,12 @@ export default function Products() {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {products.length > 0 ? (
-                  products.map((product) => (
+                  products.map((product, index) => (
                     <tr
                       key={product._id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                     >
+                      <td className="px-6 py-4 text-center text-white">{index + 1}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">

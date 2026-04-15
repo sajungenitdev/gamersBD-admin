@@ -84,14 +84,14 @@ export default function UserAddressCard({
                 </p>
               </div>
 
-              <div>
+              {/* <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                   TAX ID
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   {profile.address?.taxId || "-"}
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
 
